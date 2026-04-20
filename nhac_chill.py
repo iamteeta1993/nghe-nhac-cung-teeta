@@ -4,15 +4,15 @@ import requests
 from bs4 import BeautifulSoup
 import google.generativeai as genai
 
-# 1. Cấu hình Hệ điều hành Teeta Neural
+# 1. Cấu hình Hệ điều hành Teeta OS
 st.set_page_config(page_title="TEETA NEURAL OS", page_icon="🧠", layout="wide")
 
-# 2. Nhúng bộ não AI Gemini (Đã dán mã của đại ca)
+# 2. Nhúng bộ não AI Gemini (Đã nhúng mã của đại ca)
 API_KEY = "AIzaSyDR5qfvuNz9m_agr53g1ZywlZHjZ697fdI"
 genai.configure(api_key=API_KEY)
 model = genai.GenerativeModel('gemini-pro')
 
-# 3. Giao diện Cyberpunk 2026 đẳng cấp
+# 3. Giao diện Cyberpunk 2026 Đẳng cấp
 st.markdown("""
     <style>
     .stApp { background-color: #050505; color: #00ffcc; }
@@ -27,93 +27,70 @@ st.markdown("""
     </style>
     """, unsafe_allow_html=True)
 
-# --- HỆ THỐNG ĐĂNG NHẬP THÀNH VIÊN ---
+# --- HỆ THỐNG ĐĂNG NHẬP ---
 if 'logged_in' not in st.session_state:
     st.session_state.logged_in = False
 
 if not st.session_state.logged_in:
-    c1, c2, c3 = st.columns([1, 2, 1])
+    c1, c2, c3 = st.columns()
     with c2:
-        st.markdown("<h2 style='text-align: center; color: #ffd700;'>🔐 TRUY CẬP HỆ THỐNG VIP</h2>", unsafe_allow_html=True)
-        user = st.text_input("Tên đăng nhập:")
-        pwd = st.text_input("Mật khẩu:", type="password")
-        if st.button("KÍCH HOẠT NEURAL OS"):
-            if user == "thuba" and pwd == "123":
+        st.markdown("<h2 style='text-align: center; color: #ffd700;'>🔐 TRUY CẬP VIP</h2>", unsafe_allow_html=True)
+        user = st.text_input("Tên đăng nhập (Username):")
+        pwd = st.text_input("Mật khẩu (Password):", type="password")
+        if st.button("KÍCH HOẠT HỆ THỐNG"):
+            if user == "admin" and pwd == "teeta2026":
                 st.session_state.logged_in = True
                 st.rerun()
-            else: st.error("Thông tin không chính xác, đại ca ơi!")
+            else: st.error("Sai thông tin rồi đại ca!")
     st.stop()
 
 # --- SIDEBAR ĐIỀU HƯỚNG ---
 with st.sidebar:
-    st.markdown("<h2 style='color: #00ffcc;'>🧠 TEETA OS V26</h2>", unsafe_allow_html=True)
-    st.write(f"Chào đại ca! **{st.session_state.get('user', 'ADMIN')}**")
-    menu = st.radio("TRUNG TÂM ĐIỀU KHIỂN:", ["🤖 TRỢ LÝ AI", "🎵 NHẠC & MOOD", "🎬 XEM PHIM VIP", "📰 TIN TỨC ZNEWS"])
-    st.write("---")
+    st.title("🧠 TEETA OS V26")
+    menu = st.radio("CHUYỂN KHÔNG GIAN:", ["🤖 TRỢ LÝ AI", "🎵 NGHE NHẠC", "🎬 XEM PHIM", "📰 TIN TỨC ZNEWS"])
     if st.button("ĐĂNG XUẤT"):
         st.session_state.logged_in = False
         st.rerun()
 
-# --- MỤC 1: TRỢ LÝ AI (SỬ DỤNG BỘ NÃO GEMINI) ---
+# --- MỤC 1: TRỢ LÝ AI (GEMINI) ---
 if menu == "🤖 TRỢ LÝ AI":
     st.header("🤖 Trợ Lý Trí Tuệ Nhân Tạo Teeta")
-    st.write("Ra lệnh cho AI: *'Tóm tắt tin tức và tìm bản nhạc chill nhất'*")
+    user_input = st.text_area("Ra lệnh cho AI:", placeholder="Chào mày, tóm tắt tin tức sáng nay 20/04/2026 cho tao...")
     
-    user_input = st.text_area("Nhập lệnh cho bộ não AI:", placeholder="Ví dụ: Hôm nay 20/04/2026 có gì hot?...", height=120)
-    
-    if st.button("KÍCH HOẠT TRÍ TUỆ NHÂN TẠO"):
-        with st.spinner("🧠 AI đang phân tích dữ liệu..."):
+    if st.button("KÍCH HOẠT LỆNH"):
+        with st.spinner("🧠 AI đang suy nghĩ..."):
             try:
-                # 1. AI Trả lời văn bản
-                prompt = f"Bạn là trợ lý ảo cao cấp của Teeta. Hãy trả lời bằng tiếng Việt cực kỳ thông minh: {user_input}"
+                # AI trả lời văn bản
+                prompt = f"Bạn là trợ lý ảo cao cấp của Teeta. Hãy trả lời bằng tiếng Việt ngắn gọn, thông minh: {user_input}"
                 response = model.generate_content(prompt)
                 st.markdown(f"<div class='ai-bubble'>{response.text}</div>", unsafe_allow_html=True)
                 
-                # 2. Tự động tìm nhạc liên quan
-                st.subheader("🎵 Nhạc AI đề xuất cho cảm xúc của đại ca:")
+                # AI tự tìm nhạc
                 with yt_dlp.YoutubeDL({'quiet': True, 'default_search': 'ytsearch1'}) as ydl:
                     res = ydl.extract_info(user_input, download=False)['entries'][0]
                     st.video(res['webpage_url'])
             except Exception as e:
-                st.error("Lỗi bộ não AI. Đại ca kiểm tra lại API Key nhé!")
+                st.error(f"Lỗi: {e}")
 
-# --- MỤC 2: NHẠC & MOOD ---
-elif menu == "🎵 NHẠC & MOOD":
-    st.header("🎧 Kho Nhạc Membership")
-    m_q = st.text_input("Tìm kiếm giai điệu:", placeholder="Sơn Tùng MTP, Lofi chill...")
-    if m_q:
-        with yt_dlp.YoutubeDL({'quiet': True, 'default_search': 'ytsearch5'}) as ydl:
-            res = ydl.extract_info(m_q, download=False)['entries']
-            st.video(res[0]['webpage_url'])
-            st.success(f"Đã nạp bản nhạc: {res[0]['title']}")
+# --- MỤC 2: NHẠC ---
+elif menu == "🎵 NGHE NHẠC":
+    q = st.text_input("Tìm nhạc:")
+    if q:
+        with yt_dlp.YoutubeDL({'quiet': True, 'default_search': 'ytsearch1'}) as ydl:
+            res = ydl.extract_info(q, download=False)['entries'][0]
+            st.video(res['webpage_url'])
 
-# --- MỤC 3: XEM PHIM VIP ---
-elif menu == "🎬 XEM PHIM VIP":
-    st.header("🎬 Cinema Review Đẳng Cấp")
-    f_q = st.text_input("Tìm phim:", placeholder="Review phim hành động...")
-    s_term = f_q if f_q else "Review phim mới nhất 2026"
-    with yt_dlp.YoutubeDL({'quiet': True, 'default_search': 'ytsearch6'}) as ydl:
-        movies = ydl.extract_info(s_term, download=False)['entries']
-    
-    cols = st.columns(3)
-    for i, m in enumerate(movies):
-        with cols[i%3]:
-            st.image(m['thumbnail'], use_container_width=True)
-            with st.expander("📺 Xem Trailer/Review"):
-                st.video(m['webpage_url'])
-
-# --- MỤC 4: TIN TỨC ZNEWS (SCRAPING) ---
+# --- MỤC 4: ZNEWS ---
 elif menu == "📰 TIN TỨC ZNEWS":
-    st.header("📰 Trình Đọc Báo ZNews AI")
+    st.header("📰 ZNews Reader")
     try:
         headers = {'User-Agent': 'Mozilla/5.0'}
         resp = requests.get("https://znews.vn", headers=headers, timeout=10)
         soup = BeautifulSoup(resp.content, 'html.parser')
-        articles = soup.find_all('article', limit=8)
-        for art in articles:
-            title_tag = art.find('p', class_='article-title') or art.find('h3')
-            if title_tag:
-                st.markdown(f"<div class='ai-bubble'><b>🔥 {title_tag.get_text()}</b><br>Đã sẵn sàng cho AI tóm tắt nội dung...</div>", unsafe_allow_html=True)
-    except: st.error("Mất kết nối với vệ tinh tin tức!")
+        for art in soup.find_all('article', limit=5):
+            title = art.find('p', class_='article-title') or art.find('h3')
+            if title:
+                st.markdown(f"<div class='ai-bubble'><b>🔥 {title.get_text()}</b></div>", unsafe_allow_html=True)
+    except: st.error("Lỗi kết nối tin tức!")
 
-st.caption("TEETA NEURAL OS V26.0 | POWERED BY GEMINI AI | 2026")
+st.caption("TEETA OS V26.0 | POWERED BY GEMINI AI")
