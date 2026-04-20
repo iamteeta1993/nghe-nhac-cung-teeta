@@ -8,7 +8,7 @@ import google.generativeai as genai
 st.set_page_config(page_title="TEETA NEURAL OS", page_icon="🧠", layout="wide")
 
 # 2. KHỞI TẠO BỘ NÃO AI (ĐÃ DÁN KHÓA CỦA ĐẠI CA)
-API_KEY = "AIzaSyDo4d5bIRhxlrPQgt-aiBF4YO5nPbuoe9s"
+API_KEY = "AIzaSyDrzyxfn8Sa5L3At0BDHn_aLLiByy4l-LA"
 genai.configure(api_key=API_KEY)
 
 def get_brain():
