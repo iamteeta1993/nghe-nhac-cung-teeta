@@ -1,55 +1,64 @@
 import streamlit as st
 import yt_dlp
+import requests
 
 st.set_page_config(page_title="Teeta Global Music", page_icon="🎧", layout="wide")
 
-# CSS giao diện Dark Mode cao cấp
+# CSS làm thanh tìm kiếm lung linh
 st.markdown("""
     <style>
     .stApp { background-color: #050505; color: white; }
-    .stTextInput input { border-radius: 30px !important; background-color: #1a1a1a !important; color: white !important; border: 1px solid #333 !important; }
-    .song-card { background-color: #111; padding: 15px; border-radius: 15px; border: 1px solid #222; margin-bottom: 20px; }
+    .stTextInput input { border-radius: 20px !important; background-color: #1a1a1a !important; color: white !important; }
     </style>
     """, unsafe_allow_html=True)
 
 st.title("🎧 TEETA GLOBAL MUSIC")
-st.write("---")
 
-query = st.text_input("", placeholder="🔍 Nhập tên bài hát hoặc nghệ sĩ bạn muốn tìm...")
+# Hàm lấy gợi ý từ YouTube
+def get_suggestions(query):
+    if not query: return []
+    url = f"http://google.com{query}"
+    response = requests.get(url)
+    # Kết quả trả về dạng list lồng nhau, cần bóc tách
+    import json
+    import re
+    search_results = re.findall(r'\
 
+# 1. Ô tìm kiếm với gợi ý
+query = st.text_input("Tìm kiếm bài hát:", placeholder="Gõ từ khóa để thấy gợi ý...", key="search_input")
+
+# 2. Hiển thị danh sách gợi ý dưới dạng nút bấm nhanh
 if query:
-    with st.spinner('🚀 Đang lùng sục danh sách nhạc...'):
+    suggestions = get_suggestions(query)
+    if suggestions:
+        st.write("🔍 **Gợi ý cho bạn:**")
+        cols = st.columns(len(suggestions[:5])) # Hiện 5 gợi ý nhanh
+        for i, tip in enumerate(suggestions[:5]):
+            if cols[i].button(tip):
+                # Khi bấm vào gợi ý, gán lại query bằng từ đó
+                query = tip
+                st.rerun()
+
+# 3. Xử lý tìm kiếm chính
+if query:
+    st.divider()
+    with st.spinner(f'🚀 Đang tìm danh sách cho: {query}...'):
         try:
-            # Tìm kiếm 5 kết quả hàng đầu
-            ydl_opts = {
-                'format': 'best',
-                'noplaylist': True,
-                'quiet': True,
-                'default_search': 'ytsearch5', # Lấy 5 bài
-            }
-            
+            ydl_opts = {'format': 'best', 'noplaylist': True, 'quiet': True, 'default_search': 'ytsearch5'}
             with yt_dlp.YoutubeDL(ydl_opts) as ydl:
                 info = ydl.extract_info(query, download=False)
-                songs = info['entries']
+                results = info['entries']
 
-            st.subheader(f"🔍 Danh sách tham khảo cho: '{query}'")
-            
-            # Hiển thị từng bài trong danh sách
-            for song in songs:
-                with st.container():
-                    col1, col2 = st.columns([1, 2]) # Chia tỉ lệ 1:2
-                    with col1:
-                        st.image(song.get('thumbnail'), use_container_width=True)
-                    with col2:
-                        st.markdown(f"#### {song.get('title')}")
-                        st.caption(f"👤 Kênh: {song.get('uploader')} | ⏳ Thời lượng: {song.get('duration_string')}")
-                        # Trình phát ngay dưới mỗi bài
-                        st.video(song.get('webpage_url'))
-                    st.markdown("---")
-                    
-        except Exception as e:
-            st.error("Không tìm thấy danh sách nhạc. Thử lại nhé đại ca!")
-else:
-    st.info("Hãy nhập tên bài hát để hiện danh sách gợi ý.")
+            for video in results:
+                col1, col2 = st.columns([1, 2])
+                with col1:
+                    st.image(video.get('thumbnail'), use_container_width=True)
+                with col2:
+                    st.markdown(f"### {video.get('title')}")
+                    st.caption(f"👤 {video.get('uploader')} | ⏳ {video.get('duration_string')}")
+                    st.video(video.get('webpage_url'))
+                st.markdown("---")
+        except:
+            st.error("Lỗi rồi đại ca ơi!")
 
-st.caption("© 2024 Teeta Studio - Global Streaming Platform")
+st.caption("© 2024 Teeta Studio - Search Suggestion Engine")
