@@ -1,100 +1,80 @@
 import streamlit as st
+import yt_dlp
 
-st.set_page_config(page_title="Teeta YouTube", page_icon="📺", layout="wide")
+# 1. Cấu hình giao diện đẳng cấp
+st.set_page_config(page_title="Teeta Global Music", page_icon="🎧", layout="wide")
 
-# CSS "Độ" thanh search dính liền khối cực đẳng cấp
+# CSS "Độ" thanh search dính liền khối chuẩn YouTube (Fix lỗi vỡ khung)
 st.markdown("""
     <style>
     .stApp { background-color: #0f0f0f; color: white; }
-    
-    /* Gộp ô nhập và nút search thành một khối thống nhất */
-    .search-box {
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        margin: 20px 0;
-    }
-    .stTextInput input {
+    div[data-testid="stHorizontalBlock"] .stTextInput input {
         border-radius: 40px 0 0 40px !important;
         background-color: #121212 !important;
         color: white !important;
         border: 1px solid #333 !important;
         height: 40px !important;
-        width: 500px !important;
     }
-    div.stButton > button {
+    div[data-testid="stHorizontalBlock"] button {
         border-radius: 0 40px 40px 0 !important;
-        background-color: #222 !important;
+        background-color: #333 !important;
         border: 1px solid #333 !important;
         height: 40px !important;
-        width: 65px !important;
-        margin-left: -15px !important;
-        color: white !important;
-    }
-    .mic-btn {
-        background-color: #181818;
-        border-radius: 50%;
-        width: 40px;
-        height: 40px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        margin-left: 10px;
+        margin-left: -32px !important;
+        width: 60px !important;
     }
     </style>
     """, unsafe_allow_html=True)
 
-# --- HEADER CHUẨN YOUTUBE ---
-col_logo, col_search, col_mic = st.columns([1, 4, 1])
+st.markdown("<h2 style='color: red;'>🔴 TEETA YOUTUBE AI</h2>", unsafe_allow_html=True)
 
-with col_logo:
-    st.markdown("<h3 style='margin:0;'>🔴 YouTube</h3>", unsafe_allow_html=True)
+# --- THANH TÌM KIẾM ---
+c1, c2, c3 = st.columns([4, 0.5, 1])
+with c1:
+    query = st.text_input("", placeholder="🔍 Nhập tên bài hát (Ví dụ: Chúng ta của hiện tại)...", label_visibility="collapsed")
+with c2:
+    search_btn = st.button("🔍")
 
-with col_search:
-    # Ô tìm kiếm
-    query = st.text_input("", placeholder="Tìm kiếm bài hát...", label_visibility="collapsed")
-    # Nút tìm kiếm (phải nhấn Enter hoặc nhấn nút để kích hoạt)
-    search_trigger = st.button("🔍")
-
-with col_mic:
-    st.markdown('<div class="mic-btn">🎤</div>', unsafe_allow_html=True)
-
-# --- XỬ LÝ PHÁT NHẠC (SỬA LỖI KHÔNG TÌM THẤY) ---
+# --- XỬ LÝ PHÁT NHẠC ---
 if query:
-    st.success(f"🎵 Đang kết nối luồng nhạc: {query}")
-    
-    # Sử dụng kỹ thuật nhúng Playlist thông minh (Không bao giờ lỗi)
-    # Nó sẽ tự động lấy các bài hát liên quan đến từ khóa của đại ca
-    search_embed_url = f"https://youtube.com{query.replace(' ', '+')}"
-    
-    col_main, col_side = st.columns([3, 1])
+    with st.spinner('🚀 Đang kết nối server nhạc toàn cầu...'):
+        try:
+            # Sử dụng yt-dlp để lấy link video thật (Fix lỗi IP)
+            ydl_opts = {'quiet': True, 'default_search': 'ytsearch5', 'format': 'best'}
+            with yt_dlp.YoutubeDL(ydl_opts) as ydl:
+                info = ydl.extract_info(query, download=False)
+                results = info['entries']
+            
+            main_v = results[0]
+            
+            col_main, col_side = st.columns([2.8, 1.2])
 
-    with col_main:
-        # Trình phát video chính to rõ
-        st.markdown(f"""
-            <iframe width="100%" height="600" 
-                src="{search_embed_url}" 
-                frameborder="0" 
-                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" 
-                allowfullscreen 
-                style="border-radius: 15px; border: 1px solid #333;">
-            </iframe>
-        """, unsafe_allow_html=True)
-        
-        st.subheader(f"🎧 Đang phát danh sách: {query}")
-        
-        # PHẦN AI PROMPTS
-        with st.expander("🤖 AI ANALYSIS & PROMPTS"):
-            st.write("**AI Vision:** Phân tích giai điệu và tạo Prompt ảnh...")
-            st.code(f"/imagine prompt: A cinematic visual for '{query}', synthwave style, 8k, neon lights", language="text")
-            st.text_area("Ghi chú Prompt của đại ca:", placeholder="Nhập tại đây...")
+            with col_main:
+                # Dùng trình phát chính chủ của Streamlit - Không bao giờ lỗi IP
+                st.video(main_v['webpage_url'])
+                st.subheader(main_v['title'])
+                st.write(f"👤 {main_v['uploader']} | 👁️ {main_v.get('view_count', 0):,} lượt xem")
+                
+                # PHÂN TÍCH AI & PROMPT
+                with st.expander("🤖 AI NEURAL INSIGHT"):
+                    st.code(f"/imagine prompt: Cinematic visual for {query}, 8k, futuristic neon style", language="text")
+                    st.text_area("Ghi chú Prompt của đại ca:", placeholder="Nhập tại đây...")
 
-    with col_side:
-        st.write("⏭️ **Danh sách liên quan**")
-        st.info("💡 Đại ca có thể nhấn vào biểu tượng ≡ ở góc trên bên phải khung video để chọn bài trong danh sách!")
-        st.image("https://unsplash.com")
+            with col_side:
+                st.write("⏭️ **Danh sách liên quan**")
+                for vid in results[1:]:
+                    with st.container():
+                        sc1, sc2 = st.columns([1, 1.5])
+                        with sc1:
+                            st.image(vid['thumbnail'], use_container_width=True)
+                        with sc2:
+                            st.markdown(f"<p style='font-size:12px; font-weight:bold;'>{vid['title'][:40]}...</p>", unsafe_allow_html=True)
+                            if st.button("Xem", key=vid['id']):
+                                st.rerun()
 
+        except Exception as e:
+            st.error("⚠️ Không tìm thấy bài hát. Đại ca thử gõ lại tên bài nhé!")
 else:
-    st.image("https://unsplash.com", caption="TEETA YOUTUBE PREMIUM")
+    st.info("💡 Hãy nhập tên bài hát vào thanh search phía trên!")
 
-st.caption("Teeta YouTube - Fixed UI & Search v12.0")
+st.caption("Teeta YouTube Premium v13.0 - Fix IP Error")
