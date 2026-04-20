@@ -46,7 +46,7 @@ if not st.session_state.logged_in:
         user = st.text_input("Username:")
         pwd = st.text_input("Password:", type="password")
         if st.button("KÍCH HOẠT"):
-            if user == "admin" and pwd == "teeta2026":
+            if user == "thang" and pwd == "123":
                 st.session_state.logged_in = True
                 st.rerun()
             else: st.error("Sai rồi đại ca ơi!")
