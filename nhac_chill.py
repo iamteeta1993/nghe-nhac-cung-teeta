@@ -1,80 +1,93 @@
 import streamlit as st
 import yt_dlp
+import feedparser
+import random
 
-# 1. Cấu hình giao diện đẳng cấp
-st.set_page_config(page_title="Teeta Global Music", page_icon="🎧", layout="wide")
+# 1. Cấu hình hệ thống Neural
+st.set_page_config(page_title="TEETA ULTIMATE HUB", page_icon="🚀", layout="wide")
 
-# CSS "Độ" thanh search dính liền khối chuẩn YouTube (Fix lỗi vỡ khung)
+# 2. CSS Dark Mode chuẩn 2026
 st.markdown("""
     <style>
-    .stApp { background-color: #0f0f0f; color: white; }
-    div[data-testid="stHorizontalBlock"] .stTextInput input {
-        border-radius: 40px 0 0 40px !important;
-        background-color: #121212 !important;
-        color: white !important;
-        border: 1px solid #333 !important;
-        height: 40px !important;
-    }
-    div[data-testid="stHorizontalBlock"] button {
-        border-radius: 0 40px 40px 0 !important;
-        background-color: #333 !important;
-        border: 1px solid #333 !important;
-        height: 40px !important;
-        margin-left: -32px !important;
-        width: 60px !important;
-    }
+    .stApp { background-color: #050505; color: #00ffcc; }
+    [data-testid="stSidebar"] { background-color: #111; border-right: 1px solid #333; }
+    .card { background-color: #111; padding: 15px; border-radius: 15px; border: 1px solid #222; margin-bottom: 20px; transition: 0.3s; }
+    .card:hover { border-color: #ff4b4b; background-color: #1a1a1a; }
+    .news-title { color: #ffffff; font-weight: bold; text-decoration: none; font-size: 18px; }
+    .news-title:hover { color: #ff4b4b; }
     </style>
     """, unsafe_allow_html=True)
 
-st.markdown("<h2 style='color: red;'>🔴 TEETA YOUTUBE AI</h2>", unsafe_allow_html=True)
+# --- SIDEBAR ĐIỀU HƯỚNG ---
+with st.sidebar:
+    st.title("🚀 TEETA HUB")
+    st.write("---")
+    menu = st.radio("CHỌN KHÔNG GIAN:", ["🎧 NGHE NHẠC", "🎬 XEM PHIM", "📰 TIN TỨC 24H"], index=0)
+    st.write("---")
+    st.info("Hệ thống Neural v15.0 - Sẵn sàng phục vụ đại ca!")
 
-# --- THANH TÌM KIẾM ---
-c1, c2, c3 = st.columns([4, 0.5, 1])
-with c1:
-    query = st.text_input("", placeholder="🔍 Nhập tên bài hát (Ví dụ: Chúng ta của hiện tại)...", label_visibility="collapsed")
-with c2:
-    search_btn = st.button("🔍")
+# --- XỬ LÝ LOGIC ---
 
-# --- XỬ LÝ PHÁT NHẠC ---
-if query:
-    with st.spinner('🚀 Đang kết nối server nhạc toàn cầu...'):
-        try:
-            # Sử dụng yt-dlp để lấy link video thật (Fix lỗi IP)
-            ydl_opts = {'quiet': True, 'default_search': 'ytsearch5', 'format': 'best'}
-            with yt_dlp.YoutubeDL(ydl_opts) as ydl:
-                info = ydl.extract_info(query, download=False)
-                results = info['entries']
-            
-            main_v = results[0]
-            
-            col_main, col_side = st.columns([2.8, 1.2])
-
-            with col_main:
-                # Dùng trình phát chính chủ của Streamlit - Không bao giờ lỗi IP
-                st.video(main_v['webpage_url'])
-                st.subheader(main_v['title'])
-                st.write(f"👤 {main_v['uploader']} | 👁️ {main_v.get('view_count', 0):,} lượt xem")
+# MỤC 1: NGHE NHẠC (YOUTUBE CORE)
+if menu == "🎧 NGHE NHẠC":
+    st.header("🎵 Không Gian Âm Nhạc")
+    query = st.text_input("", placeholder="🔍 Nhập tên bài hát hoặc nghệ sĩ...", key="music_search")
+    
+    if query:
+        with st.spinner('🚀 AI đang quét sóng âm...'):
+            try:
+                with yt_dlp.YoutubeDL({'quiet': True, 'default_search': 'ytsearch8'}) as ydl:
+                    results = ydl.extract_info(query, download=False)['entries']
                 
-                # PHÂN TÍCH AI & PROMPT
-                with st.expander("🤖 AI NEURAL INSIGHT"):
-                    st.code(f"/imagine prompt: Cinematic visual for {query}, 8k, futuristic neon style", language="text")
-                    st.text_area("Ghi chú Prompt của đại ca:", placeholder="Nhập tại đây...")
+                col_main, col_side = st.columns([2.5, 1])
+                with col_main:
+                    st.video(results[0]['webpage_url'])
+                    st.subheader(results[0]['title'])
+                    with st.expander("🤖 AI Music Insight"):
+                        st.code(f"/imagine prompt: Futuristic visual of {query}, neon style, 8k", language="text")
+                with col_side:
+                    st.write("**Tiếp theo:**")
+                    for vid in results[1:6]:
+                        st.image(vid['thumbnail'], use_container_width=True)
+                        if st.button("Phát bài này", key=vid['id']): st.rerun()
+            except: st.error("Lỗi kết nối YouTube!")
 
-            with col_side:
-                st.write("⏭️ **Danh sách liên quan**")
-                for vid in results[1:]:
-                    with st.container():
-                        sc1, sc2 = st.columns([1, 1.5])
-                        with sc1:
-                            st.image(vid['thumbnail'], use_container_width=True)
-                        with sc2:
-                            st.markdown(f"<p style='font-size:12px; font-weight:bold;'>{vid['title'][:40]}...</p>", unsafe_allow_html=True)
-                            if st.button("Xem", key=vid['id']):
-                                st.rerun()
+# MỤC 2: XEM PHIM (REVIEW & TRAILER)
+elif menu == "🎬 XEM PHIM":
+    st.header("🎬 Rạp Phim Review")
+    m_query = st.text_input("", placeholder="🔍 Tìm phim hoặc thể loại (Hành động, Kinh dị...)", key="movie_search")
+    
+    search_term = m_query if m_query else "Review phim mới nhất 2026"
+    with st.spinner('🎬 Đang lùng sục kho phim...'):
+        with yt_dlp.YoutubeDL({'quiet': True, 'default_search': 'ytsearch12'}) as ydl:
+            movies = ydl.extract_info(search_term, download=False)['entries']
+        
+        cols = st.columns(3)
+        for i, movie in enumerate(movies):
+            with cols[i % 3]:
+                st.markdown("<div class='card'>", unsafe_allow_html=True)
+                st.image(movie['thumbnail'], use_container_width=True)
+                st.markdown(f"**{movie['title'][:50]}...**")
+                with st.expander("📺 Xem ngay"): st.video(movie['webpage_url'])
+                st.markdown("</div>", unsafe_allow_html=True)
 
-        except Exception as e:
-            st.error("⚠️ Không tìm thấy bài hát. Đại ca thử gõ lại tên bài nhé!")
-else:
-    st.info("💡 Hãy nhập tên bài hát vào thanh search phía trên!")
+# MỤC 3: TIN TỨC (RSS FEED TỪ VNEXPRESS/TUOITRE)
+elif menu == "📰 TIN TỨC 24H":
+    st.header("📰 Cập Nhật Tin Tức Toàn Cầu")
+    source = st.selectbox("Chọn nguồn tin:", ["VnExpress - Tin mới nhất", "Tuổi Trẻ - Thời sự"])
+    
+    rss_url = "https://vnexpress.net" if "VnExpress" in source else "https://tuoitre.vn"
+    
+    with st.spinner('📡 Đang bắt sóng vệ tinh...'):
+        feed = feedparser.parse(rss_url)
+        for entry in feed.entries[:15]:
+            with st.container():
+                st.markdown(f"""
+                    <div class='card'>
+                        <a href='{entry.link}' target='_blank' class='news-title'>{entry.title}</a>
+                        <p style='color: #888; font-size: 14px;'>📅 {entry.published}</p>
+                        <p style='color: #ccc;'>{entry.summary.split('<br />')[-1][:200]}...</p>
+                    </div>
+                """, unsafe_allow_html=True)
 
-st.caption("Teeta YouTube Premium v13.0 - Fix IP Error")
+st.caption("TEETA ULTIMATE HUB V15.0 | ÂM NHẠC • ĐIỆN ẢNH • THÔNG TIN | 2026")
