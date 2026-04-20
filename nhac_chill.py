@@ -29,7 +29,7 @@ if not st.session_state.logged_in:
         st.markdown("<h2 style='text-align: center;'>🔐 NEURAL ACCESS</h2>", unsafe_allow_html=True)
         password = st.text_input("Nhập mã truy cập của đại ca:", type="password")
         if st.button("KÍCH HOẠT HỆ THỐNG"):
-            if password == "teeta2026": # Mật khẩu của đại ca ở đây
+            if password == "thuba": # Mật khẩu của đại ca ở đây
                 st.session_state.logged_in = True
                 st.rerun()
             else:
