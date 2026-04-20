@@ -2,59 +2,40 @@ import streamlit as st
 import random
 from midiutil import MIDIFile
 import io
+import base64
 
-# --- CẤU HÌNH GIAO DIỆN WEB ---
 st.set_page_config(page_title="Nghe Nhạc Cùng Teeta", page_icon="🎵")
 st.title("🎵 Nghe Nhạc Cùng Teeta")
-st.subheader("Phần mềm sáng tác nhạc tự động bằng AI & Code")
 
-st.markdown("""
-Chào mừng bạn! Hệ thống sẽ sử dụng thuật toán để chọn các nốt nhạc trong thang âm **C Major (Đô Trưởng)** 
-để tạo ra một bản nhạc độc bản không trùng lặp.
-""")
+# 1. Thuật toán tạo nhạc
+tempo = st.slider("Tốc độ nhạc (BPM)", 60, 180, 120)
 
-# --- THANH ĐIỀU CHỈNH ---
-col1, col2 = st.columns(2)
-with col1:
-    tempo = st.slider("Tốc độ nhạc (BPM)", 60, 180, 120)
-with col2:
-    notes_count = st.select_slider("Số lượng nốt nhạc", options=[16, 32, 64], value=32)
+if st.button("🎼 SÁNG TÁC VÀ NGHE TRỰC TIẾP"):
+    MyMIDI = MIDIFile(1)
+    MyMIDI.addTempo(0, 0, tempo)
+    scale = [60, 62, 64, 65, 67, 69, 71, 72]
+    
+    for i in range(32):
+        pitch = random.choice(scale)
+        MyMIDI.addNote(0, 0, pitch, i * 0.5, 0.5, 100)
+    
+    # Chuyển MIDI sang dữ liệu base64 để trình phát Web đọc được
+    mem_file = io.BytesIO()
+    MyMIDI.writeFile(mem_file)
+    midi_data = mem_file.getvalue()
+    b64_midi = base64.b64encode(midi_data).decode()
 
-# --- XỬ LÝ TẠO NHẠC ---
-if st.button("🎼 BẮT ĐẦU SÁNG TÁC"):
-    with st.spinner('Đang tính toán giai điệu...'):
-        # Khởi tạo đối tượng MIDI
-        MyMIDI = MIDIFile(1)
-        track = 0
-        time = 0
-        MyMIDI.addTempo(track, time, tempo)
+    # 2. Nhúng trình phát nhạc MIDI bằng JavaScript (Nghe trực tiếp trên trình duyệt)
+    st.success("✅ Đã sáng tác xong! Bạn nhấn Play ở dưới để nghe nhé:")
+    
+    # Sử dụng thư viện ngoài để phát nhạc trực tiếp
+    midi_player_html = f"""
+    <script src="https://jsdelivr.net"></script>
+    <midi-player src="data:audio/midi;base64,{b64_midi}" sound-font visualizer="#myVisualizer"></midi-player>
+    <midi-visualizer type="piano-roll" id="myVisualizer" src="data:audio/midi;base64,{b64_midi}"></midi-visualizer>
+    """
+    st.components.v1.html(midi_player_html, height=400)
+    
+    st.download_button("📥 Tải file .mid về máy", midi_data, "nhac_teeta.mid")
 
-        # Thang âm Đô Trưởng (C4 đến C5)
-        scale = [60, 62, 64, 65, 67, 69, 71, 72]
-        
-        # Thuật toán chọn nốt
-        for i in range(notes_count):
-            pitch = random.choice(scale) # AI chọn nốt
-            duration = random.choice([0.5, 1]) # Nhịp ngắn hoặc dài
-            volume = random.randint(80, 110) # Độ to nhỏ ngẫu nhiên cho tự nhiên
-            
-            MyMIDI.addNote(track, 0, pitch, time, duration, volume)
-            time += duration
-
-        # Chuyển dữ liệu MIDI vào bộ nhớ (để tải về trên web)
-        mem_file = io.BytesIO()
-        MyMIDI.writeFile(mem_file)
-        
-        st.success("✅ Bản nhạc của bạn đã sẵn sàng!")
-        
-        # Nút tải file
-        st.download_button(
-            label="📥 Tải bản nhạc (.mid) về máy",
-            data=mem_file.getvalue(),
-            file_name="nhac_cua_teeta.mid",
-            mime="audio/midi"
-        )
-        
-        st.balloons() # Hiệu ứng chúc mừng
-
-st.info("💡 Mẹo: Bạn có thể kéo file .mid vừa tải về vào trang 'onlinesequencer.net' để nghe trực tiếp trên trình duyệt!")
+st.info("💡 Trình phát này sẽ giả lập tiếng Piano để bạn nghe trực tiếp trên Web!")
