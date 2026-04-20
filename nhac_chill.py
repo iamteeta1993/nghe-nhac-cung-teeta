@@ -3,29 +3,34 @@ import yt_dlp
 import requests
 from bs4 import BeautifulSoup
 import google.generativeai as genai
-import random
 
-# 1. Neural System Configuration
-st.set_page_config(page_title="TEETA INTEL OS", page_icon="🧠", layout="wide")
+# 1. Cấu hình hệ thống Neural Tiếng Việt
+st.set_page_config(page_title="HỆ ĐIỀU HÀNH TEETA", page_icon="🧠", layout="wide")
 
-# 2. AI Brain Configuration (Using Gemini's Free API Key)
-# Note: You can get the API Key at ://google.com
-genai.configure(api_key="AIzaSy... (Paste your Key here)")
-model = genai.GenerativeModel('gemini-pro')
+# 2. Cấu hình Bộ não AI (Dán API Key của đại ca vào đây)
+# Lấy Key tại: https://google.com
+API_KEY = "DÁN_MÃ_AIza_CỦA_ĐẠI_CA_VÀO_ĐÂY"
 
-# 3. World-Class CSS
+if API_KEY != "DÁN_MÃ_AIza_CỦA_ĐẠI_CA_VÀO_ĐÂY":
+    genai.configure(api_key=API_KEY)
+    model = genai.GenerativeModel('gemini-pro')
+
+# 3. Giao diện Dark Mode chuẩn Quốc tế
 st.markdown("""
     <style>
     .stApp { background: #000; color: #00ffcc; }
-    .stTextInput input { border-radius: 20px; background: #111 !important; color: #00ffcc !important; border: 1px solid #00ffcc !important; }
-    .membership-card { background: linear-gradient(135deg, #1e1e1e 0%, #111 100%); padding: 20px; border-radius: 15px; border: 1px solid #FFD700; }
-    .ai-bubble { background: #161b22; padding: 20px; border-radius: 15px; border-left: 5px solid #00ffcc; line-height: 1.6; }
+    .stTextInput input, .stTextArea textarea { 
+        border-radius: 20px; background: #111 !important; 
+        color: #00ffcc !important; border: 1px solid #00ffcc !important; 
+    }
+    .membership-card { background: #111; padding: 25px; border-radius: 15px; border: 1px solid #FFD700; text-align: center; }
+    .ai-bubble { background: #161b22; padding: 20px; border-radius: 15px; border-left: 5px solid #00ffcc; line-height: 1.8; }
+    .stButton button { border-radius: 20px; width: 100%; transition: 0.3s; }
+    .stButton button:hover { background: #00ffcc; color: black; }
     </style>
     """, unsafe_allow_html=True)
 
-# --- MEMBERSHIP SYSTEM (SECTION 3) ---
-if 'user_db' not in st.session_state:
-    st.session_state.user_db = {"admin": "teeta2026", "guest": "123"}
+# --- HỆ THỐNG THÀNH VIÊN ---
 if 'current_user' not in st.session_state:
     st.session_state.current_user = None
 
@@ -33,78 +38,77 @@ if st.session_state.current_user is None:
     c1, c2, c3 = st.columns([1, 2, 1])
     with c2:
         st.markdown("<div class='membership-card'>", unsafe_allow_html=True)
-        st.subheader("🔑 MEMBER LOGIN SYSTEM")
-        user = st.text_input("Username:")
-        pwd = st.text_input("Password:", type="password")
-        if st.button("ACCESS SYSTEM"):
-            if user in st.session_state.user_db and st.session_state.user_db[user] == pwd:
+        st.subheader("🔐 HỆ THỐNG ĐĂNG NHẬP")
+        user = st.text_input("Tên đăng nhập:")
+        pwd = st.text_input("Mật khẩu:", type="password")
+        if st.button("TRUY CẬP HỆ THỐNG"):
+            if user == "admin" and pwd == "teeta2026":
                 st.session_state.current_user = user
                 st.rerun()
-            else: st.error("Incorrect information!")
+            else: st.error("Sai thông tin rồi đại ca!")
         st.markdown("</div>", unsafe_allow_html=True)
     st.stop()
 
-# --- MAIN INTERFACE AFTER LOGIN ---
+# --- GIAO DIỆN CHÍNH ---
 with st.sidebar:
     st.title(f"🎖️ VIP: {st.session_state.current_user.upper()}")
-    menu = st.radio("CONTROL CENTER:", ["🤖 AI ASSISTANT", "🎧 MUSIC & MOOD", "🎬 MOVIE REVIEW", "📰 ZNEWS READER"])
-    if st.button("LOG OUT"):
+    st.write("---")
+    menu = st.radio("TRUNG TÂM ĐIỀU KHIỂN:", ["🤖 TRỢ LÝ AI", "🎧 NHẠC & CẢM XÚC", "🎬 XEM REVIEW PHIM", "📰 ĐỌC BÁO ZNEWS"])
+    st.write("---")
+    if st.button("ĐĂNG XUẤT"):
         st.session_state.current_user = None
         st.rerun()
 
-# --- SECTION 2: INTEGRATING THE REAL AI BRAIN ---
-if menu == "🤖 AI ASSISTANT":
-    st.header("🤖 Teeta Artificial Intelligence Assistant")
-    st.write("You can command: *'Summarize the news and find chill music'*")
+# --- MỤC 1: TRỢ LÝ AI (BỘ NÃO THỰC THỤ) ---
+if menu == "🤖 TRỢ LÝ AI":
+    st.header("🤖 Trợ Lý Trí Tuệ Nhân Tạo Teeta")
+    st.write("Đại ca có thể ra lệnh: *'Tóm tắt tin tức nóng hôm nay và tìm nhạc không lời cho tao đọc báo'*")
 
-    user_command = st.text_area("Enter command for AI brain:", placeholder="Example: Summarize the news this morning...")
+    user_command = st.text_area("Nhập lệnh cho AI:", placeholder="Ví dụ: Chào mày, hôm nay có tin gì mới không?...", height=150)
 
-    if st.button("ACTIVATE COMMAND"):
-        with st.spinner("🧠 AI is thinking..."):
-            # Simulate or call real API to summarize & choose music
-            # Here I design the logic to summarize news from ZNews
-            try:
-                response = model.generate_content(f"Based on data from 04/20/2026, write a summary of the 3 hottest news items in Vietnam and suggest a suitable instrumental song: {user_command}")
-                st.markdown("<div class='ai-bubble'>", unsafe_allow_html=True)
-                st.write(response.text)
-                st.markdown("</div>", unsafe_allow_html=True)
+    if st.button("KÍCH HOẠT LỆNH"):
+        if API_KEY == "DÁN_MÃ_AIza_CỦA_ĐẠI_CA_VÀO_ĐÂY":
+            st.warning("⚠️ Đại ca chưa dán API Key vào dòng số 12 trong code nên AI chưa trả lời được!")
+        else:
+            with st.spinner("🧠 AI đang suy nghĩ..."):
+                try:
+                    # Gửi lệnh cho Gemini
+                    prompt = f"Bạn là trợ lý ảo cao cấp của Teeta. Hôm nay là ngày 20/04/2026. Hãy trả lời yêu cầu này một cách thông minh và ngắn gọn bằng tiếng Việt: {user_command}"
+                    response = model.generate_content(prompt)
+                    
+                    st.markdown("<div class='ai-bubble'>", unsafe_allow_html=True)
+                    st.write(response.text)
+                    st.markdown("</div>", unsafe_allow_html=True)
 
-                # AI automatically finds music based on content
-                st.subheader("🎵 AI recommended music for you:")
-                with yt_dlp.YoutubeDL({'quiet':True, 'default_search':'ytsearch1'}) as ydl:
-                    res = ydl.extract_info("Lofi hip hop for reading news", download=False)['entries'][0]
-                    st.video(res['webpage_url'])
-            except:
-                st.warning("You need to paste the API Key into the code for the AI brain to work 100%!")
+                    # AI tự động tìm nhạc liên quan đến tâm trạng của lệnh
+                    st.subheader("🎵 Nhạc AI chọn riêng cho đại ca:")
+                    with yt_dlp.YoutubeDL({'quiet':True, 'default_search':'ytsearch1'}) as ydl:
+                        res = ydl.extract_info(user_command, download=False)['entries'][0]
+                        st.video(res['webpage_url'])
+                except Exception as e:
+                    st.error(f"Lỗi kết nối bộ não AI: {e}")
 
-# --- OTHER SECTIONS (MUSIC, MOVIES, NEWS) ---
-elif menu == "🎧 MUSIC & MOOD":
-    st.subheader("🎧 Membership Music Store")
-    q = st.text_input("Search:")
+# --- MỤC 2: NHẠC ---
+elif menu == "🎧 NHẠC & CẢM XÚC":
+    st.subheader("🎧 Kho Nhạc Thành Viên VIP")
+    q = st.text_input("Tìm kiếm bài hát:")
     if q:
-        with yt_dlp.YoutubeDL({'quiet':True, 'default_search':'ytsearch5'}) as ydl:
-            res = ydl.extract_info(q, download=False)['entries']
-            st.video(res[0]['webpage_url'])
-            st.write(f"❤️ Saved to the music store of {st.session_state.current_user}")
+        with yt_dlp.YoutubeDL({'quiet':True, 'default_search':'ytsearch1'}) as ydl:
+            res = ydl.extract_info(q, download=False)['entries'][0]
+            st.video(res['webpage_url'])
 
-elif menu == "📰 ZNEWS READER":
-    st.header("📰 ZNews AI Translation")
-    st.info("The system is automatically translating international news into Vietnamese...")
-    # Logic to extract ZNews (keep from previous version)
+# --- MỤC 4: ZNEWS ---
+elif menu == "📰 ĐỌC BÁO ZNEWS":
+    st.header("📰 Trình Đọc Báo ZNews Đẳng Cấp")
     try:
         headers = {'User-Agent': 'Mozilla/5.0'}
         resp = requests.get("https://znews.vn", headers=headers, timeout=10)
         soup = BeautifulSoup(resp.content, 'html.parser')
-        for art in soup.find_all('article', limit=5):
-            title = art.find('p', class_='article-title').get_text()
-            st.markdown(f"<div class='ai-bubble'><b>{title}</b><br>AI is translating content...</div>", unsafe_allow_html=True)
-    except: st.error("Connection error!")
+        articles = soup.find_all('article', limit=8)
+        for art in articles:
+            title_tag = art.find('p', class_='article-title') or art.find('h3')
+            if title_tag:
+                st.markdown(f"<div class='ai-bubble'><b>🔥 {title_tag.get_text()}</b><br>Nhấn vào Trợ lý AI để yêu cầu tóm tắt bài báo này!</div>", unsafe_allow_html=True)
+    except: st.error("Lỗi kết nối vệ tinh ZNews!")
 
-# --- SECTION 3.1: INSTRUCTIONS FOR CREATING .EXE / .APK FILES ---
-st.sidebar.write("---")
-with st.sidebar.expander("📦 PACKAGE APPLICATION"):
-    st.write("To create a **.exe** file, enter this command on your computer:")
-    st.code("pip install pyinstaller\npyinstaller --onefile nhac_chill.py")
-    st.write("To upload to **CH Play**, use the 'Web to APK' service or the 'Kivy' library.")
-
-st.caption("TEETA INTELLIGENCE OS V26.0 | AI POWERED | MEMBERSHIP SYSTEM")
+st.caption("HỆ ĐIỀU HÀNH TEETA V26.0 | AI POWERED | 20/04/2026")
