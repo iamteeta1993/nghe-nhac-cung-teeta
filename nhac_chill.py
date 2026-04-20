@@ -7,10 +7,10 @@ import google.generativeai as genai
 # 1. Cấu hình hệ thống Neural OS
 st.set_page_config(page_title="TEETA NEURAL OS", page_icon="🧠", layout="wide")
 
-# 2. Nhúng bộ não AI Gemini (Đã cập nhật model mới nhất)
+# 2. Nhúng bộ não AI Gemini (Sử dụng Model 1.5 Flash mới nhất)
 API_KEY = "AIzaSyDR5qfvuNz9m_agr53g1ZywlZHjZ697fdI"
 genai.configure(api_key=API_KEY)
-model = genai.GenerativeModel('gemini-1.5-flash') # ĐÃ SỬA TẠI ĐÂY
+model = genai.GenerativeModel('gemini-1.5-flash')
 
 # 3. Giao diện Cyberpunk 2026 đẳng cấp
 st.markdown("""
@@ -48,29 +48,36 @@ with st.sidebar:
         st.session_state.logged_in = False
         st.rerun()
 
-# --- MỤC 1: TRỢ LÝ AI (GEMINI) ---
+# --- MỤC 1: TRỢ LÝ AI (GEMINI 1.5 FLASH) ---
 if menu == "🤖 TRỢ LÝ AI":
     st.header("🤖 Trợ Lý Trí Tuệ Nhân Tạo Teeta")
-    user_input = st.text_area("Ra lệnh cho AI:", placeholder="Chào mày, tóm tắt tin tức sáng nay cho tao...")
+    user_input = st.text_area("Ra lệnh cho AI:", placeholder="Chào mày, hôm nay có tin gì mới không?...")
     if st.button("KÍCH HOẠT LỆNH"):
         with st.spinner("🧠 AI đang suy nghĩ..."):
             try:
-                prompt = f"Bạn là trợ lý ảo cao cấp của Teeta. Hãy trả lời bằng tiếng Việt thông minh: {user_input}"
+                prompt = f"Bạn là trợ lý ảo cao cấp của Teeta. Hãy trả lời bằng tiếng Việt thông minh và súc tích: {user_input}"
                 response = model.generate_content(prompt)
                 st.markdown(f"<div class='ai-bubble'>{response.text}</div>", unsafe_allow_html=True)
+                
+                # Tự động gợi ý nhạc theo ngữ cảnh lệnh
                 with yt_dlp.YoutubeDL({'quiet': True, 'default_search': 'ytsearch1'}) as ydl:
-                    res = ydl.extract_info(user_input, download=False)['entries']
-                    st.video(res[0]['webpage_url'])
+                    info = ydl.extract_info(user_input, download=False)
+                    res = info.get('entries', [])
+                    if res:
+                        st.video(res[0]['webpage_url'])
             except Exception as e:
                 st.error(f"Lỗi AI: {e}")
 
 # --- MỤC 2: NHẠC ---
 elif menu == "🎵 NHẠC & MOOD":
+    st.header("🎧 Kho Nhạc Membership")
     q = st.text_input("Tìm nhạc:")
     if q:
         with yt_dlp.YoutubeDL({'quiet': True, 'default_search': 'ytsearch1'}) as ydl:
-            res = ydl.extract_info(q, download=False)['entries']
-            st.video(res[0]['webpage_url'])
+            info = ydl.extract_info(q, download=False)
+            res = info.get('entries', [])
+            if res:
+                st.video(res[0]['webpage_url'])
 
 # --- MỤC 4: ZNEWS ---
 elif menu == "📰 TIN TỨC ZNEWS":
@@ -79,10 +86,12 @@ elif menu == "📰 TIN TỨC ZNEWS":
         headers = {'User-Agent': 'Mozilla/5.0'}
         resp = requests.get("https://znews.vn", headers=headers, timeout=10)
         soup = BeautifulSoup(resp.content, 'html.parser')
-        for art in soup.find_all('article', limit=5):
-            title = art.find('p', class_='article-title') or art.find('h3')
-            if title:
-                st.markdown(f suicide=f"<div class='ai-bubble'><b>🔥 {title.get_text()}</b></div>", unsafe_allow_html=True)
+        articles = soup.find_all('article', limit=5)
+        for art in articles:
+            title_tag = art.find('p', class_='article-title') or art.find('h3')
+            if title_tag:
+                # ĐÃ FIX LỖI CÚ PHÁP TẠI ĐÂY
+                st.markdown(f"<div class='ai-bubble'><b>🔥 {title_tag.get_text()}</b></div>", unsafe_allow_html=True)
     except: st.error("Lỗi kết nối tin tức!")
 
-st.caption("TEETA OS V26.0 | POWERED BY GEMINI AI | 20/04/2026")
+st.caption("TEETA OS V26.0 | POWERED BY GEMINI 1.5 FLASH | 20/04/2026")
