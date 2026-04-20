@@ -1,1 +1,4 @@
 MIDIUtil
+streamlit
+yt-dlp
+youtube-search-python
