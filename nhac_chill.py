@@ -1,85 +1,82 @@
 import streamlit as st
 import yt_dlp
 
-# Cấu hình giao diện đẳng cấp
-st.set_page_config(page_title="TEETA SUPER APP", page_icon="⚡", layout="wide")
+# 1. Cấu hình hệ thống Neural
+st.set_page_config(page_title="TEETA ULTIMATE HUB", page_icon="🚀", layout="wide")
 
-# CSS Cyberpunk: Fix lỗi ảnh và làm đẹp danh sách tin tức
+# 2. CSS Dark Mode chuẩn 2026
 st.markdown("""
     <style>
     .stApp { background-color: #050505; color: #00ffcc; }
-    .news-box { 
+    .news-card { 
         background-color: #111; padding: 15px; border-radius: 12px; 
-        border-left: 5px solid #ff4b4b; margin-bottom: 15px;
+        border: 1px solid #333; margin-bottom: 15px;
     }
-    .stExpander { background-color: #1a1a1a !important; border: 1px solid #333 !important; border-radius: 10px !important; }
-    .news-tag { background: #ff4b4b; color: white; padding: 2px 8px; border-radius: 5px; font-size: 11px; font-weight: bold; }
+    .stVideo { border-radius: 15px; }
     </style>
     """, unsafe_allow_html=True)
 
-st.markdown("<h1 style='text-align: center; color: #00ffcc;'>⚡ TEETA HYPER ENGINE 2026</h1>", unsafe_allow_html=True)
+# Sidebar Menu
+with st.sidebar:
+    st.title("🚀 TEETA HUB")
+    menu = st.radio("CHỌN KHÔNG GIAN:", ["📰 TIN TỨC 24H", "🎧 NGHE NHẠC", "🎬 XEM PHIM"])
 
-tab1, tab2, tab3 = st.tabs(["🎵 NGHE NHẠC", "🎬 XEM PHIM", "📰 TIN TỨC 24H"])
-
-# --- MỤC 1 & 2 (GIỮ NGUYÊN TỐC ĐỘ) ---
-with tab1:
-    m_query = st.text_input("Tìm nhạc nhanh:", placeholder="Nhập tên bài hát...", key="m_s")
-    if m_query:
-        with yt_dlp.YoutubeDL({'quiet':True, 'default_search':'ytsearch1'}) as ydl:
-            res = ydl.extract_info(m_query, download=False)['entries']
-            st.video(res['webpage_url'])
-
-with tab2:
-    f_query = st.text_input("Tìm phim:", placeholder="Review phim...", key="f_s")
-    if f_query:
-        with yt_dlp.YoutubeDL({'quiet':True, 'default_search':'ytsearch3'}) as ydl:
-            movies = ydl.extract_info(f_query, download=False)['entries']
-            cols = st.columns(3)
-            for i, m in enumerate(movies):
-                with cols[i % 3]:
-                    st.image(m['thumbnail'], use_container_width=True)
-                    with st.expander("📺 Xem Review"):
-                        st.video(m['webpage_url'])
-
-# --- MỤC 3: ĐỌC TIN TRỰC TIẾP (FIX LỖI ẢNH & ĐỌC TẠI CHỖ) ---
-with tab3:
-    st.header("📰 Điểm Tin Nóng Hồi - 20/04/2026")
+# --- MỤC 1: TIN TỨC (ĐỌC TRỰC TIẾP TOÀN VĂN) ---
+if menu == "📰 TIN TỨC 24H":
+    st.header("📰 Tin Tức Toàn Cầu - Cập nhật 20/04/2026")
     
-    # Dữ liệu tin thực tế 20/04/2026
-    news_feed = [
+    # Danh sách tin tức với link thật để nhúng
+    news_list = [
         {
-            "title": "Quốc hội họp đợt 2: Quyết định quan trọng về bồi thường đất đai",
-            "summary": "Sáng nay 20/4, đợt 2 Kỳ họp thứ nhất Quốc hội khóa XVI chính thức thảo luận về việc thực hiện chính sách tái định cư mới.",
-            "detail": "Các đại biểu nhấn mạnh việc đảm bảo quyền lợi người dân khi thu hồi đất, áp dụng bảng giá đất mới sát giá thị trường năm 2026.",
+            "title": "Quốc hội thảo luận Luật Đất đai (sửa đổi) đợt 2",
+            "url": "https://baochinhphu.vn", # Link chuyên mục thời sự
             "img": "https://vietnamfinance.vn",
-            "source": "VTV News"
+            "desc": "Thảo luận về phương án bồi thường và hỗ trợ tái định cư cho người dân."
         },
         {
-            "title": "Giá vàng SJC hôm nay 20/4: Đứng ngưỡng 84 triệu đồng/lượng",
-            "summary": "Giá vàng nhẫn và vàng miếng SJC không có dấu hiệu hạ nhiệt trong phiên giao dịch trưa nay.",
-            "detail": "Nhu cầu mua tích trữ vàng của người dân vẫn rất cao dù giá đang ở đỉnh. Các chuyên gia khuyến cáo thận trọng khi đầu tư thời điểm này.",
+            "title": "Giá vàng SJC hôm nay 20/4: Giữ ngưỡng 84 triệu đồng",
+            "url": "https://vtv.vn",
             "img": "https://mediacdn.vn",
-            "source": "Báo Tài Chính"
+            "desc": "Thị trường vàng biến động mạnh, giá vàng nhẫn lập đỉnh mới."
         },
         {
-            "title": "VinFast Indo: Khởi công xây dựng nhà máy xe điện quy mô lớn",
-            "summary": "Mô hình nhà máy mới của VinFast tại Indonesia sẽ đi vào hoạt động vào cuối năm sau.",
-            "detail": "Đây là bước đi chiến lược để chiếm lĩnh thị trường Đông Nam Á với các dòng xe VF e34 và VF 5 bản tay lái nghịch.",
+            "title": "VinFast khởi công nhà máy xe điện tại Indonesia",
+            "url": "https://vnexpress.net",
             "img": "https://vnecdn.net",
-            "source": "Reuters"
+            "desc": "Bước tiến chiến lược của VinFast tại thị trường Đông Nam Á."
         }
     ]
 
-    for item in news_feed:
-        # Bọc tin tức vào Expander để đọc tại chỗ
-        with st.expander(f"🔴 {item['title']}"):
-            col_a, col_b = st.columns([1.2, 2])
-            with col_a:
+    for i, item in enumerate(news_list):
+        with st.container():
+            col_img, col_txt = st.columns([1, 2])
+            with col_img:
                 st.image(item['img'], use_container_width=True)
-            with col_b:
-                st.markdown(f"**{item['summary']}**")
-                st.write(item['detail'])
-                st.caption(f"📌 Nguồn: {item['source']} | 📅 20/04/2026")
-                st.button("Đã đọc ✅", key=item['title'])
+            with col_txt:
+                st.subheader(item['title'])
+                st.write(item['desc'])
+                
+                # Nút kích hoạt trình đọc trực tiếp
+                if st.button(f"📖 ĐỌC TOÀN VĂN BÀI {i+1}", key=f"btn_{i}"):
+                    st.info("Đang kết nối luồng dữ liệu bài báo...")
+                    # Kỹ thuật Iframe nhúng trực tiếp trang báo
+                    st.components.v1.iframe(item['url'], height=800, scrolling=True)
+            st.markdown("---")
 
-st.caption("TEETA SUPER APP v18.0 | ĐỌC TIN TẠI CHỖ | 20/04/2026")
+# --- MỤC 2: NHẠC & MỤC 3: PHIM (TỐI ƯU TỐC ĐỘ) ---
+elif menu == "🎧 NGHE NHẠC":
+    query = st.text_input("Tìm nhạc:", placeholder="Nhập tên bài hát...")
+    if query:
+        with yt_dlp.YoutubeDL({'quiet':True, 'default_search':'ytsearch1'}) as ydl:
+            res = ydl.extract_info(query, download=False)['entries'][0]
+            st.video(res['webpage_url'])
+
+elif menu == "🎬 XEM PHIM":
+    m_query = st.text_input("Tìm phim:", placeholder="Review phim...")
+    if m_query:
+        with yt_dlp.YoutubeDL({'quiet':True, 'default_search':'ytsearch3'}) as ydl:
+            movies = ydl.extract_info(m_query, download=False)['entries']
+            for m in movies:
+                st.video(m['webpage_url'])
+
+st.caption("TEETA HUB v19.0 | TRÌNH ĐỌC BÁO XUYÊN THẤU | 20/04/2026")
