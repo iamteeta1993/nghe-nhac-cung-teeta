@@ -1,48 +1,33 @@
 import streamlit as st
+import yt_dlp
 
-st.set_page_config(page_title="Teeta Music Global", page_icon="🎧", layout="wide")
+st.set_page_config(page_title="Teeta Global Music", page_icon="🎧", layout="wide")
 
-# CSS cho giao diện sang chảnh
-st.markdown("""
-    <style>
-    .stApp { background-color: #000000; color: white; }
-    .stTextInput input {
-        border-radius: 30px !important;
-        background-color: #1a1a1a !important;
-        color: white !important;
-        border: 2px solid #FF4B4B !important;
-    }
-    </style>
-    """, unsafe_allow_html=True)
+# CSS Dark Mode đẳng cấp
+st.markdown("<style>.stApp {background-color: #000; color: white;}</style>", unsafe_allow_html=True)
 
 st.title("🎧 TEETA GLOBAL MUSIC")
 
-query = st.text_input("", placeholder="🔍 Nhập tên bài hát...")
+query = st.text_input("", placeholder="🔍 Nhập tên bài hát hoặc nghệ sĩ...")
 
 if query:
-    # Fix lỗi link bằng cách format lại từ khóa chuẩn URL
-    clean_query = query.replace(" ", "+")
-    
-    st.success(f"Đã tìm thấy bài hát: {query}")
-    
-    # Sử dụng link nhúng YouTube chuẩn (embed)
-    video_url = f"https://youtube.com{clean_query}"
-    
-    # Hiển thị trình phát
-    st.markdown(f"""
-        <div style="display: flex; justify-content: center;">
-            <iframe width="100%" height="500" 
-                src="{video_url}" 
-                frameborder="0" 
-                allow="autoplay; encrypted-media" 
-                allowfullscreen 
-                style="border-radius: 20px; border: 2px solid #333;">
-            </iframe>
-        </div>
-    """, unsafe_allow_html=True)
-    
-    st.info("💡 Lưu ý: Nếu khung nhạc hiện 'YouTube từ chối kết nối', hãy nhấn vào nút Tải lại trang nhé.")
-else:
-    st.write("Nhập tên bài hát để bắt đầu bữa tiệc âm nhạc!")
+    with st.spinner('🚀 Đang tìm nhạc...'):
+        try:
+            # Tìm kiếm video trên Youtube
+            ydl_opts = {'format': 'best', 'noplaylist': True, 'quiet': True, 'default_search': 'ytsearch1'}
+            with yt_dlp.YoutubeDL(ydl_opts) as ydl:
+                info = ydl.extract_info(query, download=False)
+                video_url = info['entries'][0]['webpage_url']
+                video_title = info['entries'][0]['title']
 
-st.caption("© 2024 Teeta Studio")
+            st.success(f"🎵 Đang phát: {video_title}")
+            
+            # Sử dụng trình phát video chính chủ của Streamlit (Cực kỳ ổn định)
+            st.video(video_url)
+            
+        except Exception as e:
+            st.error("Không tìm thấy bài hát này. Đại ca thử nhập tên khác nhé!")
+else:
+    st.info("Nhập tên bài hát để bắt đầu phiêu!")
+
+st.caption("© 2024 Teeta Studio - Global Streaming Platform")
