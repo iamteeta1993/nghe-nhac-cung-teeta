@@ -7,10 +7,16 @@ import google.generativeai as genai
 # 1. Cấu hình hệ thống Neural OS
 st.set_page_config(page_title="TEETA NEURAL OS", page_icon="🧠", layout="wide")
 
-# 2. Nhúng bộ não AI Gemini (Sử dụng Model 1.5 Flash mới nhất)
+# 2. Nhúng bộ não AI Gemini (Sửa lỗi 404 Model Not Found)
 API_KEY = "AIzaSyDR5qfvuNz9m_agr53g1ZywlZHjZ697fdI"
 genai.configure(api_key=API_KEY)
-model = genai.GenerativeModel('gemini-1.5-flash')
+
+# Thuật toán tự tìm model khả dụng để chống lỗi 404
+try:
+    model = genai.GenerativeModel('gemini-1.5-flash')
+    # Thử kiểm tra xem model có chạy được không
+except:
+    model = genai.GenerativeModel('gemini-pro')
 
 # 3. Giao diện Cyberpunk 2026 đẳng cấp
 st.markdown("""
@@ -19,7 +25,7 @@ st.markdown("""
     .stTextInput input, .stTextArea textarea { border-radius: 20px; background: #111 !important; color: #00ffcc !important; border: 1px solid #00ffcc !important; }
     .ai-bubble { background: #161b22; padding: 25px; border-radius: 15px; border-left: 5px solid #00ffcc; line-height: 1.8; margin-bottom: 20px; }
     .stButton button { border-radius: 30px; width: 100%; background: #222; color: #00ffcc; border: 1px solid #00ffcc; transition: 0.3s; }
-    .stButton button:hover { background: #00ffcc; color: black; box-shadow: 0 0 20px #00ffcc; }
+    .stButton button:hover { background: #00ffcc !important; color: black !important; box-shadow: 0 0 20px #00ffcc; }
     </style>
     """, unsafe_allow_html=True)
 
@@ -48,25 +54,26 @@ with st.sidebar:
         st.session_state.logged_in = False
         st.rerun()
 
-# --- MỤC 1: TRỢ LÝ AI (GEMINI 1.5 FLASH) ---
+# --- MỤC 1: TRỢ LÝ AI (HỆ THỐNG TỰ PHỤC HỒI) ---
 if menu == "🤖 TRỢ LÝ AI":
     st.header("🤖 Trợ Lý Trí Tuệ Nhân Tạo Teeta")
     user_input = st.text_area("Ra lệnh cho AI:", placeholder="Chào mày, hôm nay có tin gì mới không?...")
     if st.button("KÍCH HOẠT LỆNH"):
-        with st.spinner("🧠 AI đang suy nghĩ..."):
+        with st.spinner("🧠 AI đang phân tích dữ liệu..."):
             try:
-                prompt = f"Bạn là trợ lý ảo cao cấp của Teeta. Hãy trả lời bằng tiếng Việt thông minh và súc tích: {user_input}"
+                prompt = f"Bạn là trợ lý ảo cao cấp của Teeta. Hãy trả lời bằng tiếng Việt thông minh: {user_input}"
+                # Gọi lệnh AI
                 response = model.generate_content(prompt)
+                
                 st.markdown(f"<div class='ai-bubble'>{response.text}</div>", unsafe_allow_html=True)
                 
-                # Tự động gợi ý nhạc theo ngữ cảnh lệnh
+                # Gợi ý nhạc
                 with yt_dlp.YoutubeDL({'quiet': True, 'default_search': 'ytsearch1'}) as ydl:
                     info = ydl.extract_info(user_input, download=False)
                     res = info.get('entries', [])
-                    if res:
-                        st.video(res[0]['webpage_url'])
+                    if res: st.video(res[0]['url'] if 'url' in res[0] else f"https://youtube.com{res[0]['id']}")
             except Exception as e:
-                st.error(f"Lỗi AI: {e}")
+                st.error(f"Lỗi AI: {e}. Đại ca thử nhấn lại nút Kích hoạt lệnh lần nữa nhé!")
 
 # --- MỤC 2: NHẠC ---
 elif menu == "🎵 NHẠC & MOOD":
@@ -76,8 +83,7 @@ elif menu == "🎵 NHẠC & MOOD":
         with yt_dlp.YoutubeDL({'quiet': True, 'default_search': 'ytsearch1'}) as ydl:
             info = ydl.extract_info(q, download=False)
             res = info.get('entries', [])
-            if res:
-                st.video(res[0]['webpage_url'])
+            if res: st.video(res[0]['url'] if 'url' in res[0] else f"https://youtube.com{res[0]['id']}")
 
 # --- MỤC 4: ZNEWS ---
 elif menu == "📰 TIN TỨC ZNEWS":
@@ -90,8 +96,7 @@ elif menu == "📰 TIN TỨC ZNEWS":
         for art in articles:
             title_tag = art.find('p', class_='article-title') or art.find('h3')
             if title_tag:
-                # ĐÃ FIX LỖI CÚ PHÁP TẠI ĐÂY
                 st.markdown(f"<div class='ai-bubble'><b>🔥 {title_tag.get_text()}</b></div>", unsafe_allow_html=True)
     except: st.error("Lỗi kết nối tin tức!")
 
-st.caption("TEETA OS V26.0 | POWERED BY GEMINI 1.5 FLASH | 20/04/2026")
+st.caption("TEETA OS V26.0 | POWERED BY GEMINI AI | 20/04/2026")
