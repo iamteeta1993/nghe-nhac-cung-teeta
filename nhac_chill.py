@@ -13,7 +13,7 @@ genai.configure(api_key=API_KEY)
 
 def get_brain():
     # Thử các model từ mạnh nhất đến ổn định nhất
-    models_to_try = ['gemini-1.5-flash-latest', 'gemini-1.5-flash', 'gemini-pro']
+    models_to_try = ['gemini-pro', 'gemini-1.5-flash']
     for m in models_to_try:
         try:
             brain = genai.GenerativeModel(m)
