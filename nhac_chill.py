@@ -9,7 +9,7 @@ st.set_page_config(page_title="HỆ ĐIỀU HÀNH TEETA", page_icon="🧠", layo
 
 # 2. Cấu hình Bộ não AI (Dán API Key của đại ca vào đây)
 # Lấy Key tại: https://google.com
-API_KEY = "DÁN_MÃ_AIza_CỦA_ĐẠI_CA_VÀO_ĐÂY"
+API_KEY = "AIzaSyDR5qfvuNz9m_agr53g1ZywlZHjZ697fdI"
 
 if API_KEY != "DÁN_MÃ_AIza_CỦA_ĐẠI_CA_VÀO_ĐÂY":
     genai.configure(api_key=API_KEY)
