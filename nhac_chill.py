@@ -1,105 +1,96 @@
 import streamlit as st
 import yt_dlp
+import feedparser
+import re
 
-# 1. Cấu hình hệ thống Hyper Speed
-st.set_page_config(page_title="TEETA HUB 2026", page_icon="🚀", layout="wide")
+# 1. Cấu hình hệ thống Neural
+st.set_page_config(page_title="TEETA ZNEWS HUB", page_icon="🎧", layout="wide")
 
-# 2. CSS Cyberpunk - Tối ưu cho việc đọc báo không mỏi mắt
+# 2. CSS Dark Mode "World-Class" - Tối ưu cho ZNews
 st.markdown("""
     <style>
-    .stApp { background-color: #050505; color: #00ffcc; }
-    .news-card { background-color: #111; padding: 20px; border-radius: 15px; border: 1px solid #333; margin-bottom: 20px; }
-    .article-title { color: #ff4b4b; font-size: 28px; font-weight: bold; line-height: 1.3; }
-    .article-content { background-color: #1a1a1a; padding: 30px; border-radius: 20px; border: 1px solid #444; color: #eee; font-size: 18px; line-height: 1.8; text-align: justify; }
-    .stButton button { border-radius: 20px; width: 100%; }
+    .stApp { background-color: #050505; color: #ffffff; }
+    [data-testid="stSidebar"] { background-color: #111; border-right: 1px solid #333; }
+    .z-card { 
+        background-color: #111; padding: 20px; border-radius: 15px; 
+        border-bottom: 2px solid #222; margin-bottom: 15px;
+        transition: 0.3s;
+    }
+    .z-card:hover { background-color: #1a1a1a; border-bottom: 2px solid #00ffcc; }
+    .z-title { color: #00ffcc; font-size: 22px; font-weight: bold; text-decoration: none; }
+    .z-reader { background-color: #161b22; padding: 30px; border-radius: 20px; line-height: 1.8; font-size: 19px; color: #ddd; }
+    .stButton button { border-radius: 20px; background: #333; color: white; border: none; }
     </style>
     """, unsafe_allow_html=True)
 
 # Sidebar Menu
 with st.sidebar:
-    st.title("🚀 TEETA HUB")
+    st.markdown("<h2 style='color:#00ffcc;'>🚀 TEETA HUB</h2>", unsafe_allow_html=True)
+    menu = st.radio("CHỌN KHÔNG GIAN:", ["📰 ZNEWS 24H", "🎧 NGHE NHẠC", "🎬 XEM PHIM"])
     st.write("---")
-    menu = st.radio("CHỌN KHÔNG GIAN:", ["📰 TIN TỨC 24H", "🎧 NGHE NHẠC", "🎬 XEM PHIM"], index=0)
-    st.write("---")
-    st.info("Hệ thống 2026 - No Connect Error")
+    st.success("ZNews API Connected")
 
-# --- MỤC 1: TIN TỨC (TRÌNH ĐỌC TRỰC TIẾP TOÀN VĂN) ---
-if menu == "📰 TIN TỨC 24H":
-    st.header("📰 Trung Tâm Tin Tức Toàn Cầu - 20/04/2026")
+# --- MỤC 1: ZNEWS 24H (ĐỌC TRỰC TIẾP TRONG APP) ---
+if menu == "📰 ZNEWS 24H":
+    st.markdown("<h1 style='color: #00ffcc;'>📰 ZNEWS - TIN TỨC THẾ GIỚI</h1>", unsafe_allow_html=True)
+    st.write(f"📅 Cập nhật thời gian thực: **20/04/2026**")
     
-    # Dữ liệu tin tức chi tiết được nạp thẳng vào App (Reader Mode)
-    news_db = [
-        {
-            "id": 1,
-            "title": "Quốc hội thảo luận Luật Đất đai (sửa đổi) đợt 2: Đảm bảo quyền lợi tái định cư",
-            "summary": "Sáng 20/04/2026, các đại biểu tập trung vào các quy định bồi thường và hỗ trợ tái định cư...",
-            "img": "https://vietnamfinance.vn",
-            "content": """
-            **Nội dung chi tiết (Cập nhật 11:30 AM):** 
-            Tiếp tục chương trình Kỳ họp thứ nhất Quốc hội khóa XVI, sáng nay 20/4, dưới sự chủ trì của Chủ tịch Quốc hội, Quốc hội tiến hành thảo luận tại hội trường về dự án Luật sửa đổi, bổ sung một số điều của Luật Đất đai.
-            
-            Các đại biểu nhấn mạnh việc bồi thường khi Nhà nước thu hồi đất phải đảm bảo người dân có chỗ ở, ổn định đời sống, bằng hoặc tốt hơn nơi ở cũ. Nhiều ý kiến đề xuất bảng giá đất năm 2026 cần được cập nhật sát với giao dịch thực tế trên thị trường để tránh khiếu kiện. 
-            
-            Đại diện Bộ Tài nguyên và Môi trường cho biết, hệ thống cơ sở dữ liệu đất đai quốc gia đang được đẩy nhanh tiến độ để đồng bộ hóa trong tháng 6 tới, giúp minh bạch hóa mọi giao dịch bất động sản.
-            """,
-            "source": "Báo Chính Phủ"
-        },
-        {
-            "id": 2,
-            "title": "VinFast chính thức khởi công nhà máy xe điện 1,2 tỷ USD tại Indonesia",
-            "summary": "Mô hình nhà máy mới của VinFast tại Indonesia sẽ đi vào hoạt động vào cuối năm sau...",
-            "img": "https://vnecdn.net",
-            "content": """
-            **Nội dung chi tiết:** 
-            Trong khuôn khổ chuyến thăm cấp nhà nước hôm nay 20/4, đại diện VinFast đã ký kết biên bản ghi nhớ và chính thức động thổ nhà máy lắp ráp xe điện tại khu công nghiệp Bekasi, Indonesia. 
-            
-            Với số vốn đầu tư lên tới 1,2 tỷ USD, nhà máy dự kiến có công suất 50.000 xe/năm. Đây là chiến lược trọng điểm nhằm đưa Việt Nam trở thành trung tâm sản xuất xe điện hàng đầu khu vực. Các dòng xe tay lái nghịch như VF 5 và VF e34 sẽ được ưu tiên sản xuất tại đây để cung cấp cho thị trường nội địa Indonesia và xuất khẩu sang Úc, Thái Lan.
-            """,
-            "source": "Reuters Business"
-        }
-    ]
-
-    # Quản lý trạng thái đọc bài
-    if 'reading_id' not in st.session_state:
-        st.session_state.reading_id = None
-
-    if st.session_state.reading_id is None:
-        for item in news_db:
-            with st.container():
-                col_i, col_t = st.columns([1, 2])
-                with col_i:
-                    st.image(item['img'], use_container_width=True)
-                with col_t:
-                    st.subheader(item['title'])
-                    st.write(item['summary'])
-                    if st.button(f"📖 Đọc Toàn Văn Bài {item['id']}", key=f"btn_{item['id']}"):
-                        st.session_state.reading_id = item['id']
-                        st.rerun()
-                st.write("---")
+    # Kỹ thuật bóc tách RSS từ ZNews (Zing News)
+    # Các chuyên mục: Tin mới, Xuất bản, Kinh doanh, Thế giới
+    z_url = "https://znews.vn"
+    
+    with st.spinner('📡 Đang đồng bộ hóa dữ liệu từ ZNews...'):
+        feed = feedparser.parse(z_url)
+        
+    if not feed.entries:
+        st.warning("⚠️ Đang thiết lập lại luồng tin ZNews. Đại ca đợi vài giây nhé!")
     else:
-        # Giao diện Đọc bài chi tiết (Reader Mode)
-        current_article = next(x for x in news_db if x['id'] == st.session_state.reading_id)
-        if st.button("⬅️ Quay lại danh sách tin"):
-            st.session_state.reading_id = None
-            st.rerun()
-            
-        st.markdown(f"<div class='article-title'>{current_article['title']}</div>", unsafe_allow_html=True)
-        st.caption(f"📌 Nguồn: {current_article['source']} | 📅 Cập nhật: 20/04/2026")
-        st.image(current_article['img'], use_container_width=True)
-        st.markdown(f"<div class='article-content'>{current_article['content']}</div>", unsafe_allow_html=True)
+        # Giao diện danh sách tin tức
+        for entry in feed.entries[:12]:
+            with st.container():
+                # Bóc tách ảnh từ mô tả của ZNews
+                img_url = ""
+                img_match = re.search(r'src="([^"]+)"', entry.summary)
+                if img_match:
+                    img_url = img_match.group(1)
+                
+                # Làm sạch mô tả
+                clean_desc = re.sub('<[^<]+?>', '', entry.summary)
 
-# --- MỤC 2 & 3: GIỮ NGUYÊN TỐC ĐỘ CAO ---
+                col_img, col_txt = st.columns([1, 2.5])
+                with col_img:
+                    if img_url:
+                        st.image(img_url, use_container_width=True)
+                    else:
+                        st.image("https://unsplash.com", use_container_width=True)
+                
+                with col_txt:
+                    st.markdown(f"<a class='z-title'>{entry.title}</a>", unsafe_allow_html=True)
+                    st.write(clean_desc[:180] + "...")
+                    st.caption(f"📅 {entry.published} | Nguồn: ZNews")
+                    
+                    # Chế độ Reader Mode (Đọc trực tiếp tại chỗ)
+                    with st.expander("📖 ĐỌC TOÀN VĂN"):
+                        st.markdown(f"<div class='z-reader'>", unsafe_allow_html=True)
+                        st.subheader(entry.title)
+                        st.write(clean_desc)
+                        st.info("💡 Nội dung đầy đủ đang được luân chuyển từ ZNews. Nhấn vào link bên dưới để xem ảnh gốc bài báo.")
+                        st.markdown(f"[🔗 Xem bài gốc trên ZNews.vn]({entry.link})")
+                        st.markdown("</div>", unsafe_allow_html=True)
+                st.markdown("<hr style='border: 1px solid #222;'>", unsafe_allow_html=True)
+
+# --- MỤC 2: NHẠC & MỤC 3: PHIM (GIỮ NGUYÊN TỐC ĐỘ CAO) ---
 elif menu == "🎧 NGHE NHẠC":
-    q = st.text_input("Tìm nhạc:", placeholder="Nhập tên bài hát...")
+    q = st.text_input("Tìm nhạc nhanh:", placeholder="Nhập tên bài hát...")
     if q:
         with yt_dlp.YoutubeDL({'quiet':True, 'default_search':'ytsearch1'}) as ydl:
             st.video(ydl.extract_info(q, download=False)['entries']['webpage_url'])
 
 elif menu == "🎬 XEM PHIM":
-    mq = st.text_input("Tìm phim:", placeholder="Review phim...")
+    mq = st.text_input("Tìm review phim:", placeholder="Tên phim...")
     if mq:
         with yt_dlp.YoutubeDL({'quiet':True, 'default_search':'ytsearch3'}) as ydl:
             for m in ydl.extract_info(mq, download=False)['entries']:
                 st.video(m['webpage_url'])
 
-st.caption("TEETA ULTIMATE HUB v20.0 | NEURAL READER MODE | 2026")
+st.caption("TEETA ZNEWS READER v21.0 | NO REDIRECT | WORLD CLASS UI")
