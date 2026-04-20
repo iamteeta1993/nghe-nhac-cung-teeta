@@ -6,7 +6,7 @@ import google.generativeai as genai
 
 st.set_page_config(page_title="TEETA NEURAL OS", page_icon="🧠", layout="wide")
 
-API_KEY = "AIzaSyDR5qfvuNz9m_agr53g1ZywlZHjZ697fdI"
+API_KEY = "AIzaSyDo4d5bIRhxlrPQgt-aiBF4YO5nPbuoe9s"
 genai.configure(api_key=API_KEY)
 
 def get_brain():
