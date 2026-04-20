@@ -44,7 +44,7 @@ if not st.session_state.logged_in:
         user = st.text_input("Tên đăng nhập:")
         pwd = st.text_input("Mật khẩu:", type="password")
         if st.button("KÍCH HOẠT HỆ THỐNG"):
-            if user == "admin" and pwd == "teeta2026":
+            if user == "thang" and pwd == "123":
                 st.session_state.logged_in = True
                 st.rerun()
             else: st.error("Sai thông tin rồi đại ca!")
