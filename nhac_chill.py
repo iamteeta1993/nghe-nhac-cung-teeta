@@ -3,76 +3,86 @@ import yt_dlp
 import requests
 import json
 
-st.set_page_config(page_title="Teeta Global Music", page_icon="🎧", layout="wide")
+st.set_page_config(page_title="Teeta YouTube", page_icon="❤️", layout="wide")
 
-# CSS Dark Mode đẳng cấp, làm thanh chọn (Selectbox) nhìn mượt hơn
+# CSS "Nhái" giao diện YouTube đẳng cấp
 st.markdown("""
     <style>
-    .stApp { background-color: #050505; color: white; }
-    .stTextInput input { border-radius: 20px !important; background-color: #1a1a1a !important; color: white !important; }
-    /* Tùy chỉnh màu cho Dropdown */
-    div[data-baseweb="select"] > div { background-color: #1a1a1a !important; color: white !important; border-radius: 15px !important; }
+    .stApp { background-color: #0f0f0f; color: white; }
+    .stTextInput input { border-radius: 40px !important; background-color: #121212 !important; color: white !important; border: 1px solid #333 !important; padding-left: 20px !important; }
+    /* Sidebar và Card bài hát bên phải */
+    .side-card { background-color: #121212; border-radius: 10px; padding: 5px; margin-bottom: 10px; display: flex; gap: 10px; cursor: pointer; }
+    .side-card:hover { background-color: #272727; }
     </style>
     """, unsafe_allow_html=True)
 
-st.title("🎧 TEETA GLOBAL MUSIC")
+# --- THANH TÌM KIẾM TRÊN CÙNG ---
+col_logo, col_search, col_user = st.columns([1, 4, 1])
+with col_logo:
+    st.markdown("### ❤️ **YouTube**")
+with col_search:
+    search_input = st.text_input("", placeholder="Tìm kiếm", key="yt_search")
+with col_user:
+    st.markdown("👤")
 
-# --- HÀM LẤY GỢI Ý TỪ YOUTUBE ---
+# --- HÀM LẤY GỢI Ý (DROPDOWN) ---
 def get_suggestions(query):
-    if not query or len(query) < 2: return []
+    if not query: return []
     try:
         url = f"http://google.com{query}"
         response = requests.get(url, timeout=5)
-        # Bóc tách dữ liệu JSON từ Google
         clean_text = response.text
-        data = json.loads(clean_text)
-        return [item[0] for item in data[1]]
-    except:
-        return []
-
-# --- GIAO DIỆN TÌM KIẾM ---
-search_input = st.text_input("Gõ tên bài hát để nhận gợi ý:", placeholder="Ví dụ: 'in', 'son tung'...", key="main_search")
+        return json.loads(clean_text)
+    except: return []
 
 suggestions = get_suggestions(search_input)
-
-# Biến lưu từ khóa cuối cùng để tìm
 final_query = ""
 
-# Nếu có gợi ý thì hiện Dropdown ngay dưới thanh tìm kiếm
 if suggestions:
-    selected_option = st.selectbox(
-        "✨ Gợi ý cho bạn (Chọn để tìm nhanh):",
-        options=["-- Chọn một gợi ý bên dưới --"] + suggestions
-    )
-    if selected_option != "-- Chọn một gợi ý bên dưới --":
-        final_query = selected_option
-else:
-    if search_input:
-        final_query = search_input
+    selected = st.selectbox("Gợi ý từ YouTube:", options=["-- Chọn từ khóa --"] + suggestions)
+    if selected != "-- Chọn từ khóa --": final_query = selected
+elif search_input:
+    final_query = search_input
 
-# --- THỰC HIỆN TÌM KIẾM ---
+# --- LAYOUT YOUTUBE: VIDEO CHÍNH (TRÁI) & DANH SÁCH (PHẢI) ---
 if final_query:
-    st.divider()
-    with st.spinner(f'🚀 Đang lùng sục: {final_query}...'):
-        try:
-            ydl_opts = {'format': 'best', 'noplaylist': True, 'quiet': True, 'default_search': 'ytsearch5'}
-            with yt_dlp.YoutubeDL(ydl_opts) as ydl:
-                info = ydl.extract_info(final_query, download=False)
-                results = info.get('entries', [])
+    try:
+        with yt_dlp.YoutubeDL({'quiet': True, 'default_search': 'ytsearch10'}) as ydl:
+            results = ydl.extract_info(final_query, download=False)['entries']
+        
+        main_video = results[0] # Bài đầu tiên làm video chính
+        side_videos = results[1:] # Các bài còn lại làm danh sách bên phải
 
-            if results:
-                st.subheader(f"🔍 Danh sách bài hát cho: {final_query}")
-                for video in results:
-                    with st.container():
-                        c1, c2 = st.columns([1, 2])
-                        with c1:
-                            st.image(video.get('thumbnail'), use_container_width=True)
-                        with c2:
-                            st.markdown(f"#### {video.get('title')}")
-                            st.caption(f"👤 {video.get('uploader')} | ⏳ {video.get('duration_string')}")
-                            st.video(video.get('webpage_url'))
-                        st.markdown("---")
-        except Exception as e:
-            st.error("Không tìm thấy nhạc, đại ca kiểm tra lại mạng nhé!")
+        col_main, col_side = st.columns([3, 1.2])
 
-st.caption("© 2026 Teeta Studio - Global Search Experience")
+        with col_main:
+            # Video chính to đùng
+            st.video(main_video['webpage_url'])
+            st.subheader(main_video['title'])
+            st.write(f"👤 {main_video['uploader']} | 👁️ {main_video.get('view_count', 0):,} lượt xem")
+            st.markdown("---")
+            st.write("📝 **Mô tả:**")
+            st.caption(main_video.get('description', 'Không có mô tả')[:200] + "...")
+
+        with col_side:
+            st.write("**Video liên quan**")
+            for vid in side_videos:
+                # Hiển thị danh sách bên phải dạng card nhỏ
+                with st.container():
+                    c1, c2 = st.columns([1, 1.2])
+                    with c1:
+                        st.image(vid['thumbnail'], use_container_width=True)
+                    with c2:
+                        st.markdown(f"**{vid['title'][:40]}...**")
+                        st.caption(f"{vid['uploader']}")
+                    # Nút để chuyển bài chính (dùng tạm nút bấm)
+                    if st.button("Xem bài này", key=vid['id']):
+                        st.session_state['yt_search'] = vid['title']
+                        st.rerun()
+
+    except:
+        st.error("Lỗi tải nhạc rồi đại ca!")
+else:
+    st.info("Nhập tên bài hát phía trên để trải nghiệm giao diện YouTube!")
+
+st.caption("Design by Teeta Studio - YouTube Clone Project")
