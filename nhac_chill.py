@@ -4,101 +4,73 @@ import requests
 from bs4 import BeautifulSoup
 import google.generativeai as genai
 
-# 1. Cấu hình Neural OS
 st.set_page_config(page_title="TEETA NEURAL OS", page_icon="🧠", layout="wide")
 
-# 2. KHỞI TẠO BỘ NÃO AI (SỬA LỖI SYNTAX & MODEL)
 API_KEY = "AIzaSyDR5qfvuNz9m_agr53g1ZywlZHjZ697fdI"
 genai.configure(api_key=API_KEY)
 
 def get_brain():
-    # Thử các model từ mới nhất đến ổn định
     models_to_try = ['gemini-1.5-flash-latest', 'gemini-1.5-flash', 'gemini-pro']
     for m in models_to_try:
         try:
             brain = genai.GenerativeModel(m)
             brain.generate_content("ping")
             return brain
-        except:
-            continue
+        except: continue
     return None
 
 model = get_brain()
 
-# 3. Giao diện Cyberpunk đẳng cấp
-st.markdown("""
-    <style>
-    .stApp { background-color: #050505; color: #00ffcc; }
-    .ai-bubble { background: #161b22; padding: 25px; border-radius: 15px; border-left: 5px solid #00ffcc; line-height: 1.8; margin-bottom: 20px; }
-    .stButton button { border-radius: 30px; width: 100%; background: #222; color: #00ffcc; border: 1px solid #00ffcc; }
-    .stButton button:hover { background: #00ffcc !important; color: black !important; box-shadow: 0 0 20px #00ffcc; }
-    </style>
-    """, unsafe_allow_html=True)
+st.markdown("<style>.stApp {background-color: #050505; color: #00ffcc;} .ai-bubble {background: #161b22; padding: 25px; border-radius: 15px; border-left: 5px solid #00ffcc;}</style>", unsafe_allow_html=True)
 
-# --- HỆ THỐNG ĐĂNG NHẬP ---
-if 'logged_in' not in st.session_state:
-    st.session_state.logged_in = False
-
+if 'logged_in' not in st.session_state: st.session_state.logged_in = False
 if not st.session_state.logged_in:
     c1, c2, c3 = st.columns(3)
     with c2:
-        st.markdown("<h2 style='text-align: center;'>🔐 TRUY CẬP VIP</h2>", unsafe_allow_html=True)
+        st.subheader("🔐 TRUY CẬP VIP")
         user = st.text_input("Username:")
         pwd = st.text_input("Password:", type="password")
         if st.button("KÍCH HOẠT"):
-            if user == "thang" and pwd == "123":
+            if user == "admin" and pwd == "teeta2026":
                 st.session_state.logged_in = True
                 st.rerun()
-            else: st.error("Sai rồi đại ca ơi!")
+            else: st.error("Sai rồi đại ca!")
     st.stop()
 
-# --- GIAO DIỆN CHÍNH ---
 with st.sidebar:
     st.title("🧠 TEETA OS V26")
-    menu = st.radio("CHỌN KHÔNG GIAN:", ["🤖 TRỢ LÝ AI", "🎵 NHẠC & MOOD", "🎬 XEM PHIM", "📰 TIN TỨC ZNEWS"])
+    menu = st.radio("CHỌN:", ["🤖 TRỢ LÝ AI", "🎵 NHẠC", "🎬 PHIM", "📰 TIN TỨC"])
 
 if menu == "🤖 TRỢ LÝ AI":
-    st.header("🤖 Trợ Lý Trí Tuệ Nhân Tạo Teeta")
-    user_input = st.text_area("Ra lệnh cho AI:", placeholder="Chào mày, hôm nay có tin gì mới không?...")
+    st.header("🤖 Trợ Lý AI Teeta")
+    user_input = st.text_area("Ra lệnh cho AI:")
     if st.button("KÍCH HOẠT LỆNH"):
-        if model is None:
-            st.error("⚠️ Hệ thống AI của Google đang từ chối kết nối. Hãy kiểm tra lại API Key!")
-        else:
-            with st.spinner("🧠 AI đang phân tích dữ liệu thực..."):
+        if model:
+            with st.spinner("🧠 AI đang nghĩ..."):
                 try:
-                    response = model.generate_content(f"Bạn là trợ lý ảo của Teeta. Trả lời bằng tiếng Việt: {user_input}")
-                    # ĐÃ FIX LỖI CÚ PHÁP TẠI ĐÂY (Xóa 'f military=')
+                    response = model.generate_content(f"Trả lời tiếng Việt: {user_input}")
                     st.markdown(f"<div class='ai-bubble'>{response.text}</div>", unsafe_allow_html=True)
-                    
-                    # Tìm nhạc tự động
-                    with yt_dlp.YoutubeDL({'quiet': True, 'default_search': 'ytsearch1'}) as ydl:
-                        info = ydl.extract_info(user_input, download=False)
-                        res = info.get('entries', [])
-                        if res:
-                            v_url = res[0]['url'] if 'url' in res[0] else f"https://youtube.com{res[0]['id']}"
-                            st.video(v_url)
-                except Exception as e:
-                    st.error(f"Lỗi phản hồi: {e}")
+                    with yt_dlp.YoutubeDL({'quiet':True, 'default_search':'ytsearch1'}) as ydl:
+                        res = ydl.extract_info(user_input, download=False)['entries']
+                        st.video(res[0]['webpage_url'])
+                except Exception as e: st.error(f"Lỗi: {e}")
+        else: st.error("Lỗi API Key!")
 
-elif menu == "🎵 NHẠC & MOOD":
+elif menu == "🎵 NHẠC":
     q = st.text_input("Tìm nhạc:")
     if q:
-        with yt_dlp.YoutubeDL({'quiet': True, 'default_search': 'ytsearch1'}) as ydl:
-            info = ydl.extract_info(q, download=False)
-            res = info.get('entries', [])
-            if res:
-                v_url = res[0]['url'] if 'url' in res[0] else f"https://youtube.com{res[0]['id']}"
-                st.video(v_url)
+        with yt_dlp.YoutubeDL({'quiet':True, 'default_search':'ytsearch1'}) as ydl:
+            res = ydl.extract_info(q, download=False)['entries']
+            st.video(res[0]['webpage_url'])
 
-elif menu == "📰 TIN TỨC ZNEWS":
+elif menu == "📰 TIN TỨC":
     st.header("📰 ZNews Reader")
     try:
-        headers = {'User-Agent': 'Mozilla/5.0'}
-        resp = requests.get("https://znews.vn", headers=headers, timeout=10)
+        resp = requests.get("https://znews.vn", headers={'User-Agent': 'Mozilla/5.0'}, timeout=10)
         soup = BeautifulSoup(resp.content, 'html.parser')
         for art in soup.find_all('article', limit=5):
             title = art.find('p', class_='article-title') or art.find('h3')
             if title: st.markdown(f"<div class='ai-bubble'><b>🔥 {title.get_text()}</b></div>", unsafe_allow_html=True)
     except: st.error("Lỗi kết nối!")
 
-st.caption("TEETA OS V26.0 | POWERED BY HYPER-AI | 20/04/2026")
+st.caption("TEETA OS V26.0 | 20/04/2026")
