@@ -7,10 +7,10 @@ import google.generativeai as genai
 # 1. Cấu hình hệ thống Neural OS
 st.set_page_config(page_title="TEETA NEURAL OS", page_icon="🧠", layout="wide")
 
-# 2. Nhúng bộ não AI Gemini (Mã của đại ca)
+# 2. Nhúng bộ não AI Gemini (Đã cập nhật model mới nhất)
 API_KEY = "AIzaSyDR5qfvuNz9m_agr53g1ZywlZHjZ697fdI"
 genai.configure(api_key=API_KEY)
-model = genai.GenerativeModel('gemini-pro')
+model = genai.GenerativeModel('gemini-1.5-flash') # ĐÃ SỬA TẠI ĐÂY
 
 # 3. Giao diện Cyberpunk 2026 đẳng cấp
 st.markdown("""
@@ -28,14 +28,13 @@ if 'logged_in' not in st.session_state:
     st.session_state.logged_in = False
 
 if not st.session_state.logged_in:
-    # Sửa lỗi dòng 35 tại đây: Thêm số 3 vào columns
     c1, c2, c3 = st.columns(3)
     with c2:
         st.markdown("<h2 style='text-align: center; color: #ffd700;'>🔐 TRUY CẬP VIP</h2>", unsafe_allow_html=True)
         user = st.text_input("Tên đăng nhập:")
         pwd = st.text_input("Mật khẩu:", type="password")
         if st.button("KÍCH HOẠT HỆ THỐNG"):
-            if user == "admin" and pwd == "teeta2026":
+            if user == "thang" and pwd == "123":
                 st.session_state.logged_in = True
                 st.rerun()
             else: st.error("Sai thông tin rồi đại ca!")
@@ -44,7 +43,7 @@ if not st.session_state.logged_in:
 # --- SIDEBAR ĐIỀU HƯỚNG ---
 with st.sidebar:
     st.title("🧠 TEETA OS V26")
-    menu = st.radio("CHUYỂN KHÔNG GIAN:", ["🤖 TRỢ LÝ AI", "🎵 NGHE NHẠC", "🎬 XEM PHIM", "📰 TIN TỨC ZNEWS"])
+    menu = st.radio("CHUYỂN KHÔNG GIAN:", ["🤖 TRỢ LÝ AI", "🎵 NHẠC & MOOD", "🎬 XEM PHIM", "📰 TIN TỨC ZNEWS"])
     if st.button("ĐĂNG XUẤT"):
         st.session_state.logged_in = False
         st.rerun()
@@ -66,7 +65,7 @@ if menu == "🤖 TRỢ LÝ AI":
                 st.error(f"Lỗi AI: {e}")
 
 # --- MỤC 2: NHẠC ---
-elif menu == "🎵 NGHE NHẠC":
+elif menu == "🎵 NHẠC & MOOD":
     q = st.text_input("Tìm nhạc:")
     if q:
         with yt_dlp.YoutubeDL({'quiet': True, 'default_search': 'ytsearch1'}) as ydl:
@@ -83,7 +82,7 @@ elif menu == "📰 TIN TỨC ZNEWS":
         for art in soup.find_all('article', limit=5):
             title = art.find('p', class_='article-title') or art.find('h3')
             if title:
-                st.markdown(f"<div class='ai-bubble'><b>🔥 {title.get_text()}</b></div>", unsafe_allow_html=True)
+                st.markdown(f suicide=f"<div class='ai-bubble'><b>🔥 {title.get_text()}</b></div>", unsafe_allow_html=True)
     except: st.error("Lỗi kết nối tin tức!")
 
 st.caption("TEETA OS V26.0 | POWERED BY GEMINI AI | 20/04/2026")
