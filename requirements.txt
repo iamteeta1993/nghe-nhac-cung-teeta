@@ -2,3 +2,5 @@ streamlit
 yt-dlp
 beautifulsoup4
 requests
+pandas
+
