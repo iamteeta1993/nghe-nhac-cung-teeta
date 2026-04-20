@@ -4,45 +4,59 @@ from midiutil import MIDIFile
 import io
 import base64
 
-st.set_page_config(page_title="Nghe Nhạc Cùng Teeta", page_icon="🎵")
-st.title("🎵 Nghe Nhạc Cùng Teeta")
+st.set_page_config(page_title="Nghe Nhạc Cùng Teeta", page_icon="🎹", layout="wide")
 
-# 1. Thuật toán tạo nhạc
-tempo = st.slider("Tốc độ nhạc (BPM)", 60, 180, 120)
+st.title("🎹 Trình Sáng Tác Nhạc Trực Quan - Teeta")
 
-if st.button("🎼 SÁNG TÁC VÀ NGHE TRỰC TIẾP"):
+# Cấu hình thanh bên
+with st.sidebar:
+    st.header("Cài đặt âm nhạc")
+    tempo = st.slider("Tốc độ (BPM)", 60, 180, 120)
+    notes_count = st.slider("Số lượng nốt", 16, 64, 32)
+    st.info("Nhấn nút bên phải để bắt đầu!")
+
+# Xử lý tạo nhạc
+if st.button("🎼 SÁNG TÁC VÀ HIỆN BẢN NHẠC"):
     MyMIDI = MIDIFile(1)
     MyMIDI.addTempo(0, 0, tempo)
-    scale = [60, 62, 64, 65, 67, 69, 71, 72] # Đô Trưởng
+    scale = [60, 62, 64, 65, 67, 69, 71, 72] # C Major
     
-    for i in range(32):
+    time = 0
+    for i in range(notes_count):
         pitch = random.choice(scale)
-        MyMIDI.addNote(0, 0, pitch, i * 0.5, 0.5, 100)
+        duration = random.choice([0.5, 1])
+        MyMIDI.addNote(0, 0, pitch, time, duration, 100)
+        time += duration
     
-    # Chuyển MIDI sang dữ liệu base64
+    # Xuất dữ liệu ra Base64
     mem_file = io.BytesIO()
     MyMIDI.writeFile(mem_file)
-    midi_data = mem_file.getvalue()
-    b64_midi = base64.b64encode(midi_data).decode()
+    midi_b64 = base64.b64encode(mem_file.getvalue()).decode()
 
-    st.success("✅ Đã sáng tác xong! Đợi 1 giây để loa hiện ra...")
-    
-    # 2. Nhúng trình phát nhạc MIDI xịn (Dùng bản ổn định hơn)
-    midi_player_html = f"""
-    <script src="https://jsdelivr.net"></script>
-    <div style="background: #f0f2f6; padding: 20px; border-radius: 10px;">
+    # Nhúng thư viện Trực quan (Midi Player & Visualizer)
+    player_html = f"""
+    <div style="background-color: #1e1e1e; padding: 20px; border-radius: 15px; border: 2px solid #ff4b4b;">
+        <script src="https://jsdelivr.net"></script>
+        
         <midi-player 
-            src="data:audio/midi;base64,{b64_midi}" 
+            src="data:audio/midi;base64,{midi_b64}" 
             sound-font="https://googleapis.com" 
             visualizer="#myVisualizer">
         </midi-player>
-        <div style="margin-top: 20px;">
-            <midi-visualizer type="piano-roll" id="myVisualizer" src="data:audio/midi;base64,{b64_midi}"></midi-visualizer>
+
+        <div style="margin-top: 20px; background: white; border-radius: 10px;">
+            <midi-visualizer type="piano-roll" id="myVisualizer" src="data:audio/midi;base64,{midi_b64}"></midi-visualizer>
         </div>
     </div>
+    <style>
+        midi-player {{ width: 100%; margin: 10px 0; }}
+        midi-visualizer {{ width: 100%; height: 200px; }}
+    </style>
     """
-    st.components.v1.html(midi_player_html, height=450)
     
-    st.download_button("📥 Tải file .mid về máy", midi_data, "nhac_teeta.mid")
+    st.components.v1.html(player_html, height=450)
+    st.success("✅ Đã vẽ xong bản nhạc! Nhấn Play trên loa để nghe.")
+    st.download_button("📥 Tải file .mid", mem_file.getvalue(), "teeta_music.mid")
 
-st.info("💡 Nếu không thấy loa, bạn hãy đợi vài giây để trình duyệt tải bộ tiếng Piano nhé!")
+st.markdown("---")
+st.caption("Giao diện trực quan sử dụng thư viện HTML-MIDI-Player và Magenta.")
