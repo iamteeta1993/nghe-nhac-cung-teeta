@@ -1,29 +1,59 @@
 import streamlit as st
-import os
+from youtubesearchpython import VideosSearch
 
-st.set_page_config(page_title="Teeta Music Player", page_icon="🎧", layout="centered")
+# Cấu hình giao diện đẳng cấp
+st.set_page_config(page_title="Teeta Global Music", page_icon="🔥", layout="wide")
 
-st.title("🎧 Teeta Music Player")
-st.markdown("---")
+# CSS tùy chỉnh để làm giao diện đẹp hơn
+st.markdown("""
+    <style>
+    .main { background-color: #0e1117; }
+    .stTextInput>div>div>input { background-color: #262730; color: white; border-radius: 20px; }
+    .stButton>button { width: 100%; border-radius: 20px; background-color: #FF4B4B; color: white; }
+    .song-card { background-color: #161b22; padding: 15px; border-radius: 15px; border: 1px solid #30363d; margin-bottom: 10px; }
+    </style>
+    """, unsafe_allow_html=True)
 
-# 1. Chức năng tải nhạc lên
-uploaded_files = st.file_uploader("Chọn các file nhạc (MP3, WAV) của bạn:", type=['mp3', 'wav'], accept_multiple_files=True)
+st.title("🔥 Teeta Global Music Player")
+st.subheader("Tìm kiếm và phát nhạc trực tuyến từ kho tàng thế giới")
 
-if uploaded_files:
-    st.subheader(f"Danh sách phát ({len(uploaded_files)} bài)")
-    
-    for i, file in enumerate(uploaded_files):
-        with st.expander(f"🎵 {file.name}"):
-            # Hiển thị trình phát nhạc của trình duyệt
-            st.audio(file, format='audio/mp3')
-            
-            # Hiển thị thông tin file
-            file_details = {"Tên file": file.name, "Dung lượng": f"{file.size / 1024 / 1024:.2f} MB"}
-            st.write(file_details)
+# Thanh tìm kiếm
+query = st.text_input("", placeholder="Nhập tên bài hát hoặc nghệ sĩ bạn muốn nghe...")
 
+if query:
+    with st.spinner('Đang lùng sục kho nhạc thế giới...'):
+        search = VideosSearch(query, limit=5)
+        results = search.result()['result']
+
+    if not results:
+        st.error("Không tìm thấy bài này, thử tên khác xem sao đại ca!")
+    else:
+        st.write(f"🔍 Kết quả tìm kiếm cho: **{query}**")
+        
+        # Hiển thị kết quả dạng lưới
+        for video in results:
+            with st.container():
+                col1, col2 = st.columns([1, 2])
+                with col1:
+                    st.image(video['thumbnails'][0]['url'], use_container_width=True)
+                with col2:
+                    st.markdown(f"### {video['title']}")
+                    st.write(f"👤 Kênh: {video['channel']['name']} | ⏳ Thời lượng: {video['duration']}")
+                    
+                    # Phát nhạc trực tiếp bằng iframe Youtube (không cần tải lên)
+                    video_id = video['id']
+                    st.video(f"https://youtube.com{video_id}")
+                st.markdown("---")
 else:
-    st.info("Hãy kéo thả hoặc chọn file nhạc từ máy tính của bạn để bắt đầu nghe!")
+    # Giao diện khi chưa tìm kiếm
+    st.info("💡 Mẹo: Gõ 'Lofi hip hop' hoặc 'Sơn Tùng MTP' để bắt đầu chill.")
+    
+    # Gợi ý nhạc xu hướng
+    st.write("### 🌍 Xu hướng hôm nay")
+    cols = st.columns(3)
+    trending = ["Em xinh - Mono", "Perfect - Ed Sheeran", "Chúng ta của tương lai"]
+    for i, song in enumerate(trending):
+        if cols[i].button(song):
+            st.rerun()
 
-# 2. Giao diện trang trí thêm
-st.markdown("---")
-st.caption("Ứng dụng nghe nhạc cá nhân phát triển bởi Teeta")
+st.caption("© 2024 Teeta Music Entertainment - World Class UI")
