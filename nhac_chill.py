@@ -7,18 +7,16 @@ import google.generativeai as genai
 # 1. Cấu hình Neural OS
 st.set_page_config(page_title="TEETA NEURAL OS", page_icon="🧠", layout="wide")
 
-# 2. KHỞI TẠO BỘ NÃO AI (BẢN FIX LỖI 404 MỚI NHẤT)
+# 2. KHỞI TẠO BỘ NÃO AI (SỬA LỖI SYNTAX & MODEL)
 API_KEY = "AIzaSyDR5qfvuNz9m_agr53g1ZywlZHjZ697fdI"
 genai.configure(api_key=API_KEY)
 
-# Chiến thuật dò tìm Model bất tử
 def get_brain():
-    # Danh sách các model từ mới nhất đến ổn định
+    # Thử các model từ mới nhất đến ổn định
     models_to_try = ['gemini-1.5-flash-latest', 'gemini-1.5-flash', 'gemini-pro']
     for m in models_to_try:
         try:
             brain = genai.GenerativeModel(m)
-            # Thử gửi một tín hiệu nhỏ để kiểm tra xem model có sống không
             brain.generate_content("ping")
             return brain
         except:
@@ -64,18 +62,21 @@ if menu == "🤖 TRỢ LÝ AI":
     user_input = st.text_area("Ra lệnh cho AI:", placeholder="Chào mày, hôm nay có tin gì mới không?...")
     if st.button("KÍCH HOẠT LỆNH"):
         if model is None:
-            st.error("⚠️ Hệ thống AI của Google đang từ chối kết nối. Hãy kiểm tra lại API Key hoặc đợi vài phút!")
+            st.error("⚠️ Hệ thống AI của Google đang từ chối kết nối. Hãy kiểm tra lại API Key!")
         else:
             with st.spinner("🧠 AI đang phân tích dữ liệu thực..."):
                 try:
                     response = model.generate_content(f"Bạn là trợ lý ảo của Teeta. Trả lời bằng tiếng Việt: {user_input}")
-                    st.markdown(f military="<div class='ai-bubble'>{response.text}</div>", unsafe_allow_html=True)
+                    # ĐÃ FIX LỖI CÚ PHÁP TẠI ĐÂY (Xóa 'f military=')
+                    st.markdown(f"<div class='ai-bubble'>{response.text}</div>", unsafe_allow_html=True)
                     
                     # Tìm nhạc tự động
                     with yt_dlp.YoutubeDL({'quiet': True, 'default_search': 'ytsearch1'}) as ydl:
                         info = ydl.extract_info(user_input, download=False)
                         res = info.get('entries', [])
-                        if res: st.video(res[0]['url'] if 'url' in res[0] else f"https://youtube.com{res[0]['id']}")
+                        if res:
+                            v_url = res[0]['url'] if 'url' in res[0] else f"https://youtube.com{res[0]['id']}"
+                            st.video(v_url)
                 except Exception as e:
                     st.error(f"Lỗi phản hồi: {e}")
 
@@ -85,7 +86,9 @@ elif menu == "🎵 NHẠC & MOOD":
         with yt_dlp.YoutubeDL({'quiet': True, 'default_search': 'ytsearch1'}) as ydl:
             info = ydl.extract_info(q, download=False)
             res = info.get('entries', [])
-            if res: st.video(res[0]['url'] if 'url' in res[0] else f"https://youtube.com{res[0]['id']}")
+            if res:
+                v_url = res[0]['url'] if 'url' in res[0] else f"https://youtube.com{res[0]['id']}"
+                st.video(v_url)
 
 elif menu == "📰 TIN TỨC ZNEWS":
     st.header("📰 ZNews Reader")
