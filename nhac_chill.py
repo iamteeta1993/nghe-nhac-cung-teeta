@@ -7,7 +7,7 @@ import google.generativeai as genai
 st.set_page_config(page_title="TEETA NEURAL OS", page_icon="🧠", layout="wide")
 
 API_KEY = "AIzaSyDo4d5bIRhxlrPQgt-aiBF4YO5nPbuoe9s"
-genai.configure(api_key=API_KEY)
+API_KEY = "AIzaSyDo4d5bIRhxlrPQgt-aiBF4YO5nPbuoe9s"
 
 def get_brain():
     models_to_try = ['gemini-1.5-flash-latest', 'gemini-1.5-flash', 'gemini-pro']
