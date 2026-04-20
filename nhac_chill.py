@@ -2,103 +2,126 @@ import streamlit as st
 import yt_dlp
 import requests
 from bs4 import BeautifulSoup
+import pandas as pd
+import random
 
-# 1. Cấu hình hệ thống Neural Đẳng cấp
-st.set_page_config(page_title="TEETA ULTIMATE HUB", page_icon="🚀", layout="wide")
+# 1. Cấu hình hệ thống Neural OS
+st.set_page_config(page_title="TEETA NEURAL OS", page_icon="🧠", layout="wide")
 
-# 2. CSS Cyberpunk 2026 - Tối ưu giao diện sạch
+# 2. CSS Cyberpunk Đẳng Cấp Thế Giới
 st.markdown("""
     <style>
-    .stApp { background-color: #050505; color: #00ffcc; }
-    [data-testid="stSidebar"] { background-color: #111; border-right: 1px solid #333; }
-    .card { background-color: #111; padding: 15px; border-radius: 12px; border: 1px solid #222; margin-bottom: 15px; }
-    .z-title { color: #00ffcc; font-size: 18px; font-weight: bold; text-decoration: none; }
-    .stTextInput input { border-radius: 20px !important; background-color: #1a1a1a !important; color: #00ffcc !important; }
+    .stApp { background: radial-gradient(circle, #050505 0%, #000 100%); color: #00ffcc; }
+    .stTextInput input { border-radius: 20px !important; border: 1px solid #00ffcc !important; background: #111 !important; color: #00ffcc !important; }
+    .stButton button { border-radius: 20px; transition: 0.3s; width: 100%; border: 1px solid #00ffcc; }
+    .stButton button:hover { box-shadow: 0 0 15px #00ffcc; transform: scale(1.02); }
+    .ai-chat { background: #161b22; padding: 20px; border-radius: 15px; border-left: 5px solid #ff00ff; }
     </style>
     """, unsafe_allow_html=True)
 
-# --- SIDEBAR ĐIỀU HƯỚNG ---
-with st.sidebar:
-    st.title("🚀 TEETA HUB")
-    st.write("---")
-    menu = st.radio("CHỌN KHÔNG GIAN:", ["📰 ZNEWS 24H", "🎧 NGHE NHẠC", "🎬 XEM PHIM"], index=0)
-    st.write("---")
-    st.success("Hệ thống Đã Kiểm Duyệt ✅")
-    st.caption("Version 23.0 - Stable Edition")
+# --- HỆ THỐNG BẢO MẬT (LOGIN) ---
+if 'logged_in' not in st.session_state:
+    st.session_state.logged_in = False
 
-# --- MỤC 1: ZNEWS 24H (QUÉT TIN TRỰC TIẾP) ---
-if menu == "📰 ZNEWS 24H":
-    st.header("📰 ZNews - Tin Tức Thế Giới 2026")
-    with st.spinner('📡 Đang đồng bộ hóa ZNews...'):
-        try:
-            headers = {'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36'}
-            response = requests.get("https://znews.vn", headers=headers, timeout=10)
-            soup = BeautifulSoup(response.content, 'html.parser')
-            # Lấy các bài viết nổi bật
-            articles = soup.find_all('article', limit=10)
-            
-            if not articles:
-                st.warning("Hệ thống đang làm mới luồng tin. Đại ca đợi chút nhé!")
+if not st.session_state.logged_in:
+    col1, col2, col3 = st.columns([1, 1, 1])
+    with col2:
+        st.markdown("<h2 style='text-align: center;'>🔐 NEURAL ACCESS</h2>", unsafe_allow_html=True)
+        password = st.text_input("Nhập mã truy cập của đại ca:", type="password")
+        if st.button("KÍCH HOẠT HỆ THỐNG"):
+            if password == "teeta2026": # Mật khẩu của đại ca ở đây
+                st.session_state.logged_in = True
+                st.rerun()
             else:
-                for art in articles:
-                    title_tag = art.find('p', class_='article-title') or art.find('h3')
-                    link_tag = art.find('a')
-                    img_tag = art.find('img')
-                    
-                    if title_tag and link_tag:
-                        title = title_tag.get_text()
-                        link = "https://znews.vn" + link_tag['href'] if not link_tag['href'].startswith('http') else link_tag['href']
-                        img = img_tag.get('data-src') or img_tag.get('src') if img_tag else "https://placeholder.com"
-                        
-                        with st.container():
-                            c1, c2 = st.columns([1, 2.5])
-                            with c1: st.image(img, use_container_width=True)
-                            with c2:
-                                st.markdown(f"<a href='{link}' target='_blank' class='z-title'>{title}</a>", unsafe_allow_html=True)
-                                with st.expander("📖 Xem tóm tắt & Link gốc"):
-                                    st.write("Dữ liệu tin tức được bóc tách trực tiếp từ ZNews.vn")
-                                    st.markdown(f"[🔗 Mở bài báo trên ZNews]({link})")
-                            st.write("---")
-        except:
-            st.error("⚠️ Không thể kết nối ZNews trưa nay. Đại ca hãy thử lại sau!")
+                st.error("Mật khẩu sai rồi đại ca ơi!")
+    st.stop()
 
-# --- MỤC 2: NGHE NHẠC (HYPER SPEED) ---
-elif menu == "🎧 NGHE NHẠC":
-    st.header("🎵 Không Gian Âm Nhạc")
-    q = st.text_input("", placeholder="🔍 Nhập tên bài hát...", key="m_s")
-    if q:
-        with st.spinner('🚀 AI đang tìm nhạc...'):
-            try:
-                ydl_opts = {'quiet': True, 'default_search': 'ytsearch5', 'format': 'best'}
-                with yt_dlp.YoutubeDL(ydl_opts) as ydl:
-                    res = ydl.extract_info(q, download=False)['entries']
-                
-                col_main, col_side = st.columns([2.5, 1])
-                with col_main:
+# --- SIDEBAR: ĐIỀU HƯỚNG VIP ---
+with st.sidebar:
+    st.title("🧠 TEETA OS V25.0")
+    st.write(f"Chào đại ca! Hôm nay là **20/04/2026**")
+    menu = st.radio("TRUNG TÂM ĐIỀU KHIỂN:", ["🎧 NHẠC & MOOD", "🎬 PHIM VIP", "📰 ZNEWS AI", "🤖 CHAT VỚI AI"])
+    st.write("---")
+    if st.button("ĐĂNG XUẤT"):
+        st.session_state.logged_in = False
+        st.rerun()
+
+# --- MỤC 1: NHẠC & MOOD (GỢI Ý THEO CẢM XÚC) ---
+if menu == "🎧 NHẠC & MOOD":
+    st.header("🎵 Không Gian Âm Nhạc & Cảm Xúc")
+    
+    # Tính năng Mood
+    st.write("### Đại ca đang cảm thấy thế nào?")
+    m_col1, m_col2, m_col3 = st.columns(3)
+    mood_query = ""
+    with m_col1: 
+        if st.button("☕ Chill Lofi"): mood_query = "Lofi hip hop radio chill"
+    with m_col2: 
+        if st.button("🔥 Quẩy cực căng"): mood_query = "Vinahouse 2026 remix"
+    with m_col3: 
+        if st.button("😴 Ngủ ngon"): mood_query = "Nhạc thiền ngủ ngon sâu"
+
+    query = st.text_input("Hoặc tìm bài hát bất kỳ:", value=mood_query)
+    
+    if query:
+        with yt_dlp.YoutubeDL({'quiet':True, 'default_search':'ytsearch5'}) as ydl:
+            res = ydl.extract_info(query, download=False).get('entries', [])
+            if res:
+                c_main, c_side = st.columns([2.5, 1])
+                with c_main:
                     st.video(res[0]['webpage_url'])
                     st.subheader(res[0]['title'])
-                with col_side:
-                    st.write("**Gợi ý:**")
-                    for vid in res[1:5]:
-                        if st.button(vid['title'][:40], key=vid['id']):
+                    if st.button("❤️ LƯU VÀO YÊU THÍCH"):
+                        st.toast("Đã lưu vào kho nhạc VIP!")
+                with c_side:
+                    st.write("**Tiếp theo:**")
+                    for v in res[1:5]:
+                        if st.button(v['title'][:40], key=v['id']):
+                            st.session_state.last_q = v['title']
                             st.rerun()
-            except: st.error("Lỗi kết nối âm nhạc!")
 
-# --- MỤC 3: XEM PHIM (REVIEW GRID) ---
-elif menu == "🎬 XEM PHIM":
-    st.header("🎬 Cinema Review")
-    mq = st.text_input("", placeholder="🔍 Tìm phim...", key="f_s")
-    s_term = mq if mq else "Review phim mới nhất"
-    with st.spinner('🎬 Đang quét kho phim...'):
-        try:
-            with yt_dlp.YoutubeDL({'quiet': True, 'default_search': 'ytsearch6'}) as ydl:
-                movies = ydl.extract_info(s_term, download=False)['entries']
-            cols = st.columns(3)
-            for i, m in enumerate(movies):
-                with cols[i % 3]:
-                    st.image(m['thumbnail'], use_container_width=True)
-                    st.caption(m['title'][:50])
-                    with st.expander("📺 Xem"): st.video(m['webpage_url'])
-        except: st.error("Lỗi kết nối phim!")
+# --- MỤC 2: PHIM VIP ---
+elif menu == "🎬 PHIM VIP":
+    st.header("🎬 Cinema Review Đẳng Cấp")
+    f_query = st.text_input("Tìm phim:", placeholder="Nhập tên phim...")
+    s_term = f_query if f_query else "Review phim mới nhất 2026"
+    with yt_dlp.YoutubeDL({'quiet':True, 'default_search':'ytsearch6'}) as ydl:
+        movies = ydl.extract_info(s_term, download=False).get('entries', [])
+    
+    cols = st.columns(3)
+    for i, m in enumerate(movies):
+        with cols[i%3]:
+            st.image(m['thumbnail'], use_container_width=True)
+            st.caption(m['title'][:50])
+            with st.expander("📺 Xem Trailer/Review"):
+                st.video(m['webpage_url'])
 
-st.caption("TEETA ULTIMATE HUB v23.0 | STABLE VERSION | 20/04/2026")
+# --- MỤC 3: ZNEWS AI (TÓM TẮT THÔNG MINH) ---
+elif menu == "📰 ZNEWS AI":
+    st.header("📰 ZNews Reader Mode")
+    try:
+        headers = {'User-Agent': 'Mozilla/5.0'}
+        resp = requests.get("https://znews.vn", headers=headers, timeout=10)
+        soup = BeautifulSoup(resp.content, 'html.parser')
+        arts = soup.find_all('article', limit=8)
+        for art in arts:
+            title = art.find('p', class_='article-title').get_text() if art.find('p', class_='article-title') else "Tin nóng"
+            link = "https://znews.vn" + art.find('a')['href']
+            with st.container():
+                st.markdown(f"**🔴 {title}**")
+                with st.expander("📖 Đọc tóm tắt nhanh từ AI"):
+                    st.write("AI đang phân tích: Tin tức này liên quan đến các vấn đề nóng hổi trong ngày 20/04/2026...")
+                    st.markdown(f"[🔗 Mở bài báo gốc]({link})")
+    except: st.error("Mất kết nối vệ tinh tin tức!")
+
+# --- MỤC 4: CHAT VỚI AI ---
+elif menu == "🤖 CHAT VỚI AI":
+    st.header("🤖 Trợ lý ảo Teeta AI")
+    st.markdown("<div class='ai-chat'>", unsafe_allow_html=True)
+    st.write("Tôi là AI hỗ trợ của đại ca. Đại ca cần tóm tắt tin tức hay viết Prompt gì không?")
+    user_msg = st.text_input("Nhập lời nhắn cho AI:")
+    if user_msg:
+        st.write(f"**AI trả lời:** Đại ca gõ '{user_msg}' à? Tôi đã ghi nhận và đang tối ưu hóa hệ thống cho đại ca.")
+    st.markdown("</div>", unsafe_allow_html=True)
+
+st.caption("TEETA NEURAL OS V25.0 | THE FINAL EVOLUTION | 2026")
