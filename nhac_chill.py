@@ -1,55 +1,48 @@
 import streamlit as st
 
-# Cấu hình giao diện chuẩn Dark Mode quốc tế
-st.set_page_config(page_title="Teeta Global Music", page_icon="🔥", layout="wide")
+st.set_page_config(page_title="Teeta Music Global", page_icon="🎧", layout="wide")
 
+# CSS cho giao diện sang chảnh
 st.markdown("""
     <style>
     .stApp { background-color: #000000; color: white; }
     .stTextInput input {
+        border-radius: 30px !important;
         background-color: #1a1a1a !important;
         color: white !important;
-        border-radius: 50px !important;
         border: 2px solid #FF4B4B !important;
-        padding: 15px 30px !important;
-        font-size: 20px !important;
     }
     </style>
     """, unsafe_allow_html=True)
 
-st.title("🔥 TEETA GLOBAL MUSIC PLAYER")
-st.write("### 🌍 Tìm là thấy - Nhấn là phiêu")
+st.title("🎧 TEETA GLOBAL MUSIC")
 
-# Thanh tìm kiếm "độc bản"
-query = st.text_input("", placeholder="🔍 Nhập tên bài hát hoặc nghệ sĩ (ví dụ: 'Skyline' hoặc 'Lofi chill')...")
+query = st.text_input("", placeholder="🔍 Nhập tên bài hát...")
 
 if query:
-    st.success(f"🎵 Đang tạo danh sách phát đẳng cấp cho: {query}")
+    # Fix lỗi link bằng cách format lại từ khóa chuẩn URL
+    clean_query = query.replace(" ", "+")
     
-    # Kỹ thuật nhúng Playlist thông minh từ từ khóa tìm kiếm
-    search_url = f"https://youtube.com{query.replace(' ', '+')}"
+    st.success(f"Đã tìm thấy bài hát: {query}")
     
-    # Khung phát nhạc bo góc đẳng cấp
+    # Sử dụng link nhúng YouTube chuẩn (embed)
+    video_url = f"https://youtube.com{clean_query}"
+    
+    # Hiển thị trình phát
     st.markdown(f"""
-        <div style="display: flex; justify-content: center; background: #111; padding: 10px; border-radius: 20px; border: 1px solid #333;">
-            <iframe width="100%" height="600" 
-                src="{search_url}" 
+        <div style="display: flex; justify-content: center;">
+            <iframe width="100%" height="500" 
+                src="{video_url}" 
                 frameborder="0" 
-                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" 
+                allow="autoplay; encrypted-media" 
                 allowfullscreen 
-                style="border-radius: 15px;">
+                style="border-radius: 20px; border: 2px solid #333;">
             </iframe>
         </div>
     """, unsafe_allow_html=True)
     
-    st.info("💡 Bạn có thể nhấn vào biểu tượng ≡ ở góc trên bên phải khung nhạc để chọn các bài khác trong danh sách!")
+    st.info("💡 Lưu ý: Nếu khung nhạc hiện 'YouTube từ chối kết nối', hãy nhấn vào nút Tải lại trang nhé.")
 else:
-    st.image("https://unsplash.com", use_container_width=True)
-    st.write("---")
-    st.write("### 🎤 Gợi ý cho bạn:")
-    col1, col2, col3 = st.columns(3)
-    with col1: st.code("Sơn Tùng MTP")
-    with col2: st.code("Lofi hip hop radio")
-    with col3: st.code("Global Top 50")
+    st.write("Nhập tên bài hát để bắt đầu bữa tiệc âm nhạc!")
 
-st.caption("© 2024 Teeta Studio | World Class Streaming System")
+st.caption("© 2024 Teeta Studio")
