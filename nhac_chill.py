@@ -1,80 +1,99 @@
 import streamlit as st
 import yt_dlp
 import random
+import time
 
-# 1. Cấu hình trang
-st.set_page_config(page_title="Teeta AI Music", page_icon="🎧", layout="wide")
+# Cấu hình hệ thống Neural
+st.set_page_config(page_title="TEETA NEURAL PLAYER", page_icon="🧠", layout="wide")
 
-# 2. CSS Dark Mode chuẩn YouTube
+# Giao diện khác biệt hoàn toàn - Phong cách Cyberpunk Dark Mode
 st.markdown("""
     <style>
-    .stApp { background-color: #0f0f0f; color: white; }
-    .stTextInput input { border-radius: 40px !important; background-color: #121212 !important; color: white !important; border: 1px solid #333 !important; padding: 10px 20px !important; }
-    .comment-box { background-color: #1a1a1a; padding: 12px; border-radius: 8px; margin-bottom: 8px; border-left: 3px solid #FF0000; }
-    .ai-box { background: linear-gradient(135deg, #1e1e2f 0%, #111 100%); padding: 20px; border-radius: 15px; border: 1px solid #444; }
+    .stApp { background: radial-gradient(circle, #0d1117 0%, #000000 100%); color: #58a6ff; }
+    .stTextInput input { 
+        border-radius: 10px !important; background-color: #0d1117 !important; 
+        color: #58a6ff !important; border: 1px solid #1f6feb !important;
+        box-shadow: 0 0 15px #1f6feb33;
+    }
+    .main-player { border: 2px solid #1f6feb; border-radius: 20px; overflow: hidden; box-shadow: 0 0 30px #1f6feb44; }
+    .ai-terminal { 
+        background-color: #010409; border: 1px solid #238636; padding: 15px; 
+        border-radius: 10px; font-family: 'Courier New', monospace; color: #39ff14;
+    }
+    .comment-card { background: #161b22; border-radius: 10px; padding: 15px; border-left: 5px solid #8957e5; margin-top: 10px; }
+    .sidebar-vid { transition: 0.3s; cursor: pointer; border-radius: 10px; padding: 5px; }
+    .sidebar-vid:hover { background: #1f6feb22; transform: translateX(5px); }
     </style>
     """, unsafe_allow_html=True)
 
-# --- THANH TÌM KIẾM ---
-st.markdown("<h2 style='text-align: center; color: red;'>🔴 TEETA MUSIC AI</h2>", unsafe_allow_html=True)
-query = st.text_input("", placeholder="🔍 Tìm kiếm bài hát hoặc nghệ sĩ...", label_visibility="collapsed")
+# --- NEURAL HEADER ---
+st.markdown("<h1 style='text-align: center; color: #58a6ff; text-shadow: 0 0 20px #1f6feb;'>🧠 TEETA NEURAL MUSIC ENGINE</h1>", unsafe_allow_html=True)
+
+query = st.text_input("📡 TRUY VẤN HỆ THỐNG:", placeholder="Nhập tần số âm nhạc hoặc tên nghệ sĩ...")
 
 if query:
     try:
-        # Tìm kiếm nhạc
-        ydl_opts = {'quiet': True, 'default_search': 'ytsearch10', 'format': 'best'}
-        with yt_dlp.YoutubeDL(ydl_opts) as ydl:
-            info = ydl.extract_info(query, download=False)
-            results = info['entries']
-        
-        main_v = results[0] # Bài đầu tiên
-        
-        # --- CHIA 2 CỘT: TRÁI (VIDEO/AI/BÌNH LUẬN) - PHẢI (DANH SÁCH) ---
-        col_left, col_right = st.columns([2.5, 1])
+        with st.status("🛸 Đang huy động các AI tìm kiếm bài hát...", expanded=False) as status:
+            ydl_opts = {'quiet': True, 'default_search': 'ytsearch10', 'format': 'best'}
+            with yt_dlp.YoutubeDL(ydl_opts) as ydl:
+                info = ydl.extract_info(query, download=False)
+                results = info['entries']
+            status.update(label="✅ Kết nối thành công!", state="complete")
 
-        with col_left:
-            # PHÁT NHẠC
+        main_v = results[0]
+        
+        # CHIA LAYOUT: TỐI ƯU TRẢI NGHIỆM NGHE NHÌN
+        col_player, col_neural = st.columns([2.5, 1])
+
+        with col_player:
+            # KHUNG PHÁT NHẠC ĐẲNG CẤP
+            st.markdown("<div class='main-player'>", unsafe_allow_html=True)
             st.video(main_v['webpage_url'])
-            st.title(main_v['title'])
-            st.write(f"👤 **{main_v['uploader']}** | 👁️ {main_v.get('view_count', 0):,} lượt xem")
+            st.markdown("</div>", unsafe_allow_html=True)
             
-            # PHÂN TÍCH AI
-            with st.container():
-                st.markdown("<div class='ai-box'>", unsafe_allow_html=True)
-                st.subheader("🤖 Phân tích AI & Prompts")
-                st.write(f"**Mood:** {random.choice(['Sâu lắng', 'Mạnh mẽ', 'Chill Lofi'])}")
-                st.write("**AI Prompt gợi ý cho hình ảnh:**")
-                st.code(f"/imagine prompt: A cinematic visual of {query}, neon lights, 8k, detailed", language='text')
+            st.title(f"🎵 {main_v['title']}")
+            
+            # PHÂN TÍCH CHUYÊN SÂU TỪ AI (KHÁC BIỆT)
+            with st.expander("🤖 XEM PHÂN TÍCH NEURAL PROMPTS", expanded=True):
+                st.markdown("<div class='ai-terminal'>", unsafe_allow_html=True)
+                st.markdown(f"> **Hệ thống phân tích:** {main_v['title']}")
+                st.markdown(f"> **Mood Core:** {random.choice(['Ethereal', 'Cyber-Vibe', 'High-Fidelity', 'Melancholy Digital'])}")
+                st.markdown("> **Generated Prompts for Stable Diffusion:**")
+                st.code(f"/imagine prompt: A holographic representation of {query}, futuristic city, rainy night, synthwave aesthetic, 16k, hyper-detailed --ar 16:9", language="text")
+                st.markdown("> **Neural Status:** Bản nhạc phù hợp để kích thích sóng não Gamma.")
                 st.markdown("</div>", unsafe_allow_html=True)
 
-            # BÌNH LUẬN & GHI PROMPT
-            st.markdown("---")
-            st.subheader("💬 Bình luận & Cộng đồng")
-            new_comment = st.text_area("Ghi bình luận hoặc Prompt của bạn:", height=100)
-            if st.button("Gửi lên hệ thống"):
-                st.toast("Đã lưu nội dung của đại ca!")
-            
-            # Mockup bình luận
-            st.markdown("<div class='comment-box'><strong>AI_Assistant</strong>: Bài này có vòng hợp âm rất hay cho việc tập trung code.</div>", unsafe_allow_html=True)
-            st.markdown("<div class='comment-box'><strong>Fan_Cung</strong>: Đỉnh cao Teeta ơi!</div>", unsafe_allow_html=True)
+            # HỆ THỐNG BÌNH LUẬN & GHI PROMPT (DƯỚI BÀI HÁT)
+            st.write("---")
+            st.subheader("💬 PHẢN HỒI HỆ THỐNG & PROMPT WRITING")
+            c_input = st.text_area("Nhập Prompt hoặc bình luận của bạn tại đây:", placeholder="Ghi nhận tư duy âm nhạc của đại ca...")
+            if st.button("KÍCH HOẠT GỬI"):
+                st.balloons()
+                st.success("Hệ thống đã tiếp nhận dữ liệu!")
 
-        with col_right:
-            st.subheader("⏭️ Tiếp theo")
-            for vid in results[1:7]:
-                with st.container():
-                    c1, c2 = st.columns([1, 1.5])
-                    with c1:
-                        st.image(vid['thumbnail'], use_container_width=True)
-                    with c2:
-                        st.markdown(f"**{vid['title'][:40]}...**")
-                        if st.button("Nghe", key=vid['id']):
-                            st.session_state['last_query'] = vid['title']
-                            st.rerun()
-                    st.write("")
+            # MOCKUP BÌNH LUẬN CHẤT LƯỢNG
+            for m in [("Neural_Bot", "Nhịp điệu này đạt tần số 432Hz."), ("Teeta_Admin", "Code đã chạy xong, thưởng thức thôi!")]:
+                st.markdown(f"<div class='comment-card'><strong>{m[0]}</strong>: {m[1]}</div>", unsafe_allow_html=True)
+
+        with col_player: # Thêm phần bình luận lùi xuống
+            pass
+
+        with col_neural:
+            st.markdown("### 📡 CÁC TẦN SỐ LIÊN QUAN")
+            for vid in results[1:8]:
+                st.markdown(f"""
+                <div class='sidebar-vid'>
+                    <img src="{vid['thumbnail']}" style='width:100%; border-radius:10px;'>
+                    <p style='font-size:14px; font-weight:bold; margin-top:5px;'>{vid['title'][:50]}...</p>
+                </div>
+                """, unsafe_allow_html=True)
+                if st.button("Kích hoạt", key=vid['id']):
+                    st.rerun()
 
     except Exception as e:
-        st.error("Lỗi kết nối YouTube. Đại ca thử gõ lại tên bài hát nhé!")
+        st.error(f"⚠️ Hệ thống gặp sự cố: {e}")
 else:
-    st.info("🔥 Nhập tên bài hát để trải nghiệm hệ thống AI Music đẳng cấp thế giới!")
+    st.image("https://unsplash.com", caption="HỆ THỐNG ĐANG CHỜ LỆNH TỪ ĐẠI CA")
 
-st.caption("© 2026 Teeta AI Studio - YouTube Clone Project")
+st.divider()
+st.caption("NEURAL PLAYER VERSION 4.0 - POWERED BY TEETA CORE AI")
